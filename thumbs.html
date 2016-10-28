@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Thumb tester</title>
+	<link href="css/bootstrap.css" rel="stylesheet" />
+	<link href="css/typeahead.css" rel="stylesheet" />
+    <style type="text/css">
+        
+        html,body {
+            height:100%;
+        }
+
+        .row.first {
+            margin-top:20px;
+        }
+
+        .container {
+            display: flex;
+            flex-flow: column;
+            height:100%;
+        }
+       
+        .tc {
+            display: inline-block;
+            padding:5px;
+            cursor: pointer;
+            font-size:11px;
+    	}
+
+        .tc img {
+            border:2px solid white;
+        }
+
+        .row.first {
+            flex: 0 1 auto;
+        }
+
+        .row.title {
+            flex: 0 1 auto;
+        }
+
+        .row.viewer {
+            flex: 1 1 auto;
+            overflow-y: scroll;
+        }
+
+        footer {
+            flex: 0 1 40px;
+        }
+
+        .modal-body {
+            max-height: calc(100vh - 200px);
+        }
+
+        #bigImage {
+            margin: 0 auto;
+            max-height: calc(100vh - 230px);
+        }
+    </style>
+</head>
+
+<body>
+
+	<div class="container body-content">
+
+
+		<div class="row first">
+			<div class="col-md-12">
+				<div class="input-group">
+					<input type="text" class="form-control typeahead" placeholder="Start typing a b number or phrase from title..." name="q"
+						id="schBox">
+					<span class="input-group-btn">
+                    <button class="btn btn-default" type="submit">Go!</button>
+                </span>
+				</div>
+				<!-- /input-group -->
+			</div>
+		</div>
+
+        <div class="row title">
+			<div class="col-md-12">
+                <h3 id="title"></h3>
+            </div>
+        </div>
+
+		<div class="row viewer">
+			<div class="col-md-12 iiif">
+				<div id="thumbs">
+                    thumbs
+				</div>
+			</div>
+		</div>
+
+
+		<footer>
+		    <hr />
+			<p>Thumbnail tester</p>
+		</footer>
+	</div>
+
+    <div class="modal fade" id="imgModal" tabindex="-1" role="dialog" aria-labelledby="mdlLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="mdlLabel"></h4>
+            </div>
+            <div class="modal-body">            
+                <img id="bigImage" class="img-responsive" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-uri="">Prev</button>
+                <button type="button" class="btn btn-primary" data-uri="">Next</button>
+            </div>
+            </div>
+        </div>
+    </div>
+
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+		crossorigin="anonymous"></script>
+	<script src="script/bootstrap.min.js"></script>
+	<script src="script/typeahead.jquery.js"></script>
+	<script src="script/thumbs.js"></script>
+
+</body>
+
+</html>

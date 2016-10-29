@@ -1,0 +1,54 @@
+html,body {
+    height:100%;
+}
+
+.row.first {
+    margin-top:20px;
+}
+
+.container {
+    display: flex;
+    flex-flow: column;
+    height:100%;
+}
+
+.tc {
+    display: inline-block;
+    padding:5px;
+    cursor: pointer;
+    font-size:11px;
+}
+
+.tc img {
+    border:2px solid white;
+}
+
+.row.first {
+    flex: 0 1 auto;
+}
+
+.row.title {
+    flex: 0 1 auto;
+}
+
+.row.viewer {
+    flex: 1 1 auto;
+    overflow-y: scroll;
+}
+
+footer {
+    flex: 0 1 40px;
+}
+
+.modal-body {
+    max-height: calc(100vh - 200px);
+}
+
+#bigImage {
+    margin: 0 auto;
+    max-height: calc(100vh - 230px);
+}
+
+#thumbSize {
+    margin-top:8px;
+}

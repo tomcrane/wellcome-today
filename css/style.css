@@ -52,3 +52,9 @@ footer {
 #thumbSize {
     margin-top:8px;
 }
+
+@media only screen and (max-width : 480px) {
+    #tcol {
+        display:none;
+    }
+}

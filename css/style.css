@@ -54,7 +54,7 @@ footer {
 }
 
 @media only screen and (max-width : 480px) {
-    #tcol {
+    #tcol, footer {
         display:none;
     }
 }

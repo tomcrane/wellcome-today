@@ -53,6 +53,22 @@ footer {
     margin-top:8px;
 }
 
+.auth-ops {
+    display: flex;
+    flex-flow: column;
+}
+
+.auth-ops.auth-desc {
+    flex: 1 1 auto;
+    overflow-y: scroll;
+}
+
+.auth-ops h3 {
+    margin-top:0px;
+}
+
+
+
 @media only screen and (max-width : 480px) {
     #tcol, footer {
         display:none;

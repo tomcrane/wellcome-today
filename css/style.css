@@ -57,4 +57,11 @@ footer {
     #tcol, footer {
         display:none;
     }
+    .row.first {
+        margin-top:0;
+    }
+    .container {
+        padding-left: 3px;
+        padding-right: 3px;
+    }
 }

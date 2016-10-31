@@ -21,6 +21,7 @@ $(function() {
     processQueryString();    
     $('#manifestWait').hide();
     $('#authOps').hide();
+    $('.modal-footer').show();
     $('button.btn-prevnext').click(function(){
         canvasId = $(this).attr('data-uri');
         selectForModal(canvasId, $("img.thumb[data-uri='" + canvasId + "']"));
@@ -273,7 +274,8 @@ function on_info_complete(jqXHR, textStatus) {
         authDo.attr('data-token', services.clickthrough.token.id);
         authDo.attr('data-uri', services.clickthrough.id);
         $('#authOps').show();
-        $('#authOps h3').text(services.clickthrough.label);
+        $('.modal-footer').hide();
+        $('#authOps h5').text(services.clickthrough.label);
         $('#authOps div').html(services.clickthrough.description);
         authDo.text(services.clickthrough.confirmLabel);
     }
@@ -294,6 +296,7 @@ function doClickthroughViaWindow(ev) {
             if (tokenSvc) {                
                 // on_authed(tokenSvc);
                 $('#authOps').hide();
+                $('.modal-footer').show();
                 reloadImage(); // bypass token for now
             }
         }

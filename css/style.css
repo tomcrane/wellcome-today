@@ -23,6 +23,15 @@ html,body {
     border:2px solid white;
 }
 
+.thumb-no-access {
+    width:90px;
+    height:90px;
+    border:2px solid lightgray;
+    margin:0;
+    padding:20px;
+    vertical-align: middle;
+}
+
 .row.first {
     flex: 0 1 auto;
 }

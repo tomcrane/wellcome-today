@@ -65,7 +65,11 @@ function load(manifest){
         canvasList = manifest.sequences[0].canvases;
         $.each(canvasList, function(i, canvas){
             var thumb = getThumb(canvas);
-            thumbs.append('<div class="tc">' + canvas.label + '<br/><img class="thumb" title="' + canvas.label + '" data-uri="' + canvas['@id'] + '" src="' + thumb + '" /></div>')
+            if(thumb.indexOf('padlock.png') != -1){ // yeah...
+                thumbs.append('<div class="tc">' + canvas.label + '<br/><div class="thumb-no-access">Image not available</div>');
+            } else {
+                thumbs.append('<div class="tc">' + canvas.label + '<br/><img class="thumb" title="' + canvas.label + '" data-uri="' + canvas['@id'] + '" src="' + thumb + '" /></div>')
+            }
         });    
         $('img.thumb').click(function(){
             selectForModal($(this).attr('data-uri'), $(this));
@@ -147,6 +151,9 @@ function getImageService(canvas){
 }
 
 function getThumb(canvas){
+    if(!canvas.thumbnail){
+        return "css/padlock.png";
+    }
     if(typeof canvas.thumbnail === "string"){
         return canvas.thumbnail;
     }

@@ -3,6 +3,7 @@
 var canvasList;
 var bigImage;
 var authDo;
+var assumeFullMax = false;
 
 $(function() {
     var thumbSize = localStorage.getItem('thumbSize');
@@ -146,7 +147,7 @@ function getMainImg(canvas){
 
     // so instead
     var bigThumb = getParticularSizeThumb(canvas, 1024);
-    if(bigThumb){
+    if(bigThumb || assumeFullMax){
         return canvas.thumbnail.service['@id'] + "/full/max/0/default.jpg";
     } else {
         return canvas.images[0].resource['@id'];

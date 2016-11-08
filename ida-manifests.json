@@ -1,18 +1,18 @@
 {
-  "@context": "http://iiif.io/api/presentation/2/context.json",
-  "@id": "http://tomcrane.github.io/wellcome-today/ida-manifests.json",
-  "@type": "sc:Collection",
-  "label": "IDA Manifests",
-  "manifests": [
-    {
-      "@id": "https://dlcs-ida.org/iiif-resource/ida/roll/T-21/04/",
-      "@type": "sc:Manifest", 
-      "label": "Records of the New Mexico Superintendency of Indian Affairs	1849-1880 4	New Mexico T21"
-    },
-    {
-      "@id": "https://dlcs-ida.org/iiif-resource/ida/roll/M-1304/01/",
-      "@type": "sc:Manifest",
-      "label": "Records Created by Bureau of Indian Affairs Field Agencies Having Jurisdiction Over the Pueblo Indians 1874-1900 1 New Mexico M1304"
-    }
-  ]
+    "@context": "http://iiif.io/api/presentation/2/context.json",
+    "@id": "http://tomcrane.github.io/wellcome-today/ida-manifests.json",
+    "@type": "sc:Collection",
+    "label": "IDA Manifests",
+    "manifests": [
+        {
+            "@id": "https://dlcs-ida.org/iiif-resource/ida/roll/T-21/04/",
+            "@type": "sc:Manifest",
+            "label": "Records of the New Mexico Superintendency of Indian Affairs 1849-1880 4 New Mexico T21"
+        },
+        {
+            "@id": "https://dlcs-ida.org/iiif-resource/ida/roll/M-1304/01/",
+            "@type": "sc:Manifest",
+            "label": "Records Created by Bureau of Indian Affairs Field Agencies Having Jurisdiction Over the Pueblo Indians 1874-1900 1 New Mexico M1304"
+        }
+    ]
 }

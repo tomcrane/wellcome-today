@@ -52,6 +52,23 @@ function processQueryString(){
             }
         });
     }
+    
+    // qs = /collection=(.*)/g.exec(window.location.search);
+    // if(qs && qs[1]){     
+    //     $.getJSON(qs[1], function (collection) {
+    //         if(collection['@type'] == "sc:Collection"){
+    //             $("#idaManifests").empty();
+    //             $.each(collection.manifests, function (i, manifest) {
+    //                 $("#idaManifests").append('<option value="' + manifest['@id'] + '">' + manifest.label + '</option>');
+    //             });
+                
+    //             $('#idaManifests').change(function(){
+    //                 var mfuri =  $("#idaManifests").val();
+    //                 window.location.href = window.location.pathname + "?manifest=" + mfuri;
+    //             });
+    //         }
+    //     });  
+    // }
 }
 
 
@@ -68,7 +85,7 @@ function load(manifest){
             if(thumb.indexOf('padlock.png') != -1){ // yeah...
                 thumbs.append('<div class="tc">' + canvas.label + '<br/><div class="thumb-no-access">Image not available</div>');
             } else {
-                thumbs.append('<div class="tc">' + canvas.label + '<br/><img class="thumb" title="' + canvas.label + '" data-uri="' + canvas['@id'] + '" src="' + thumb + '" /></div>')
+                thumbs.append('<div class="tc">' + (canvas.label || '') + '<br/><img class="thumb" title="' + canvas.label + '" data-uri="' + canvas['@id'] + '" src="' + thumb + '" /></div>')
             }
         });    
         $('img.thumb').click(function(){

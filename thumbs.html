@@ -9,7 +9,7 @@
 	<link href="css/style.css" rel="stylesheet" />
 </head>
 <body>
-	<div class="container body-content">
+	<div class="container body-content" id="mainContainer">
 
 		<div class="row first">
 			<div class="col-md-10">
@@ -26,63 +26,15 @@
                     </span>
 				</div>
 			</div>
-            <div class="col-md-2" id="tcol">
-                <select id='thumbSize'>
-                    <option value="100">100 pixels</option>
-                    <option value="200">200 pixels</option>
-                    <option value="400">400 pixels</option>
-                </select>
-            </div>
+            <div class="col-md-2" id="thumbSizeSelector"></div>
 		</div>
-
-        <!--<div class="row title">
-			<div class="col-md-12">
-            </div>
-        </div>-->
-
-		<div class="row viewer">
-			<div class="col-md-12 iiif">
-                <h3 id="title"></h3>
-				<div id="thumbs">          
-                    <img src="css/spin24.gif" id='manifestWait' /> 
-				</div>
-			</div>
-		</div>
-
-		<footer>
-		    <hr />
-			<p>Thumbnail tester</p>
-		</footer>
 	</div>
-
-    <div class="modal fade" id="imgModal" tabindex="-1" role="dialog" aria-labelledby="mdlLabel">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="mdlLabel"></h4>
-            </div>
-            <div class="modal-body">            
-                <img id="bigImage" class="img-responsive" />
-                <div class="auth-ops" id="authOps">
-                    <h5>Header</h5>
-                    <div class="auth-desc">
-                    </div>
-                    <button id="authDo" type="button" class="btn btn-primary"></button>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="mdlPrev" type="button" class="btn btn-primary btn-prevnext" data-uri="">Prev</button>
-                <button id="mdlNext" type="button" class="btn btn-primary btn-prevnext" data-uri="">Next</button>
-            </div>
-            </div>
-        </div>
-    </div>
 
 	<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
 	<script src="script/bootstrap.min.js"></script>
 	<script src="script/typeahead.jquery.js"></script>
 	<script src="script/thumbs.js"></script>
+	<script src="script/wellcome.js"></script>
 
 </body>
 </html>

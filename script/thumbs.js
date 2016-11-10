@@ -5,20 +5,51 @@ var bigImage;
 var authDo;
 var assumeFullMax = false;
 
+var pop="";
+pop += "<div class=\"modal fade\" id=\"imgModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"mdlLabel\">";
+pop += "    <div class=\"modal-dialog modal-lg\" role=\"document\">";
+pop += "        <div class=\"modal-content\">";
+pop += "            <div class=\"modal-header\">";
+pop += "                <button type=\"button\" class=\"close\" data-dismiss=\"modal\" aria-label=\"Close\"><span aria-hidden=\"true\">&times;<\/span><\/button>";
+pop += "                <h4 class=\"modal-title\" id=\"mdlLabel\"><\/h4>";
+pop += "            <\/div>";
+pop += "            <div class=\"modal-body\">            ";
+pop += "                <img id=\"bigImage\" class=\"img-responsive\" \/>";
+pop += "                <div class=\"auth-ops\" id=\"authOps\">";
+pop += "                    <h5>Header<\/h5>";
+pop += "                    <div class=\"auth-desc\">";
+pop += "                    <\/div>";
+pop += "                    <button id=\"authDo\" type=\"button\" class=\"btn btn-primary\"><\/button>";
+pop += "                <\/div>";
+pop += "            <\/div>";
+pop += "            <div class=\"modal-footer\">";
+pop += "                <button id=\"mdlPrev\" type=\"button\" class=\"btn btn-primary btn-prevnext\" data-uri=\"\">Prev<\/button>";
+pop += "                <button id=\"mdlNext\" type=\"button\" class=\"btn btn-primary btn-prevnext\" data-uri=\"\">Next<\/button>";
+pop += "            <\/div>";
+pop += "        <\/div>";
+pop += "    <\/div>";
+pop += "<\/div>";
+
+document.write(pop);
+
+var rv="";
+rv += "<div class=\"row viewer\">";
+rv += "    <div class=\"col-md-12 iiif\">";
+rv += "        <h3 id=\"title\"><\/h3>";
+rv += "        <div id=\"thumbs\">";
+rv += "            <img src=\"css\/spin24.gif\" id='manifestWait' \/>";
+rv += "        <\/div>";
+rv += "    <\/div>";
+rv += "<\/div>";
+rv += "";
+rv += "<footer>";
+rv += "    <hr \/>";
+rv += "    <p>Thumbnail viewer<\/p>";
+rv += "<\/footer>";
+
+
 $(function() {
-    var thumbSize = localStorage.getItem('thumbSize');
-    if(!thumbSize){
-        thumbSize = 100;
-        localStorage.setItem('thumbSize', thumbSize);
-    }
-    if(thumbSize != 100){
-        $("#thumbSize option[value='" + thumbSize + "']").prop('selected', true);
-    }
-    $('#thumbSize').change(function(){
-        var ts =  $("#thumbSize").val();
-        localStorage.setItem('thumbSize', ts);
-        processQueryString();
-    });
+    $('#mainContainer').append(rv);
     processQueryString();    
     $('#manifestWait').hide();
     $('#authOps').hide();
@@ -33,7 +64,6 @@ $(function() {
     });
     authDo = $('#authDo');
     authDo.bind('click', doClickthroughViaWindow);
-    $('#imfeelinglucky').bind('click', ImFeelingLucky);
 });
 
 
@@ -53,23 +83,6 @@ function processQueryString(){
             }
         });
     }
-    
-    // qs = /collection=(.*)/g.exec(window.location.search);
-    // if(qs && qs[1]){     
-    //     $.getJSON(qs[1], function (collection) {
-    //         if(collection['@type'] == "sc:Collection"){
-    //             $("#idaManifests").empty();
-    //             $.each(collection.manifests, function (i, manifest) {
-    //                 $("#idaManifests").append('<option value="' + manifest['@id'] + '">' + manifest.label + '</option>');
-    //             });
-                
-    //             $('#idaManifests').change(function(){
-    //                 var mfuri =  $("#idaManifests").val();
-    //                 window.location.href = window.location.pathname + "?manifest=" + mfuri;
-    //             });
-    //         }
-    //     });  
-    // }
 }
 
 
@@ -81,21 +94,69 @@ function load(manifest){
         thumbs.append("<i>This is not a normal IIIF manifest - it's an 'IxIF' extension for audio, video, born digital. This viewer does not support them (yet).</i>");
     } else {
         canvasList = manifest.sequences[0].canvases;
-        $.each(canvasList, function(i, canvas){
-            var thumb = getThumb(canvas);
-            if(thumb.indexOf('padlock.png') != -1){ // yeah...
-                thumbs.append('<div class="tc">' + canvas.label + '<br/><div class="thumb-no-access">Image not available</div>');
-            } else {
-                thumbs.append('<div class="tc">' + (canvas.label || '') + '<br/><img class="thumb" title="' + canvas.label + '" data-uri="' + canvas['@id'] + '" src="' + thumb + '" /></div>')
-            }
-        });    
-        $('img.thumb').click(function(){
-            selectForModal($(this).attr('data-uri'), $(this));
-            $('#imgModal').modal();
-        });
+        makeThumbSizeSelector();
+        drawThumbs();
     }
     $('#typeaheadWait').hide();
     $('#manifestWait').hide();
+}
+
+function drawThumbs(){
+    var thumbs = $('#thumbs');
+    thumbs.empty();
+    for(var i=0; i<canvasList.length; i++){
+        var canvas = canvasList[i];
+        var thumbHtml = '<div class="tc">' + (canvas.label || '') + '<br/>';
+        var thumb = getThumb(canvas);
+        if(!thumb){ 
+            thumbHtml += '<div class="thumb-no-access">Image not available</div></div>';
+        } else {
+            thumbHtml += '<img class="thumb" title="' + canvas.label + '" data-uri="' + canvas['@id'] + '" src="' + thumb + '" /></div>';
+        }
+        thumbs.append(thumbHtml);
+    } 
+    $('img.thumb').click(function(){
+        selectForModal($(this).attr('data-uri'), $(this));
+        $('#imgModal').modal();
+    });
+}
+
+function makeThumbSizeSelector(){
+    thumbSizes = [];
+    for(var i=0; i<Math.min(canvasList.length, 10); i++){
+        var canvas = canvasList[i];
+        if(canvas.thumbnail && canvas.thumbnail.service && canvas.thumbnail.service.sizes){
+            var sizes = canvas.thumbnail.service.sizes;
+            for(var j=0; j<sizes.length;j++){
+                var testSize = Math.max(sizes[j].width, sizes[j].height);
+                if(thumbSizes.indexOf(testSize) == -1 && testSize <= 600){
+                    thumbSizes.push(testSize);
+                }
+            }    
+        }
+    }
+    thumbSizes.sort(function(a, b) { return a - b; });
+    if(thumbSizes.length > 1){
+        var html = "<select id='thumbSize'>";
+        for(var i=0; i< thumbSizes.length; i++){
+            html += "<option value='" + thumbSizes[i] + "'>" + thumbSizes[i] + " pixels</option>";
+        }
+        html += "</select>";
+        $('#thumbSizeSelector').append(html);
+        var thumbSize = localStorage.getItem('thumbSize');
+        if(!thumbSize){
+            thumbSize = thumbSizes[0];
+            localStorage.setItem('thumbSize', thumbSize);
+        }
+        if(thumbSize != thumbSizes[0]){
+            $("#thumbSize option[value='" + thumbSize + "']").prop('selected', true);
+        }
+        $('#thumbSize').change(function(){
+            var ts =  $("#thumbSize").val();
+            localStorage.setItem('thumbSize', ts);
+            drawThumbs();
+        });
+    }
 }
 
 function selectForModal(canvasId, $image) {
@@ -114,19 +175,15 @@ function selectForModal(canvasId, $image) {
             $('#mdlPrev').prop('disabled', false);
             prevCanvas = canvasList[cvIdx - 1];
             $('#mdlPrev').attr('data-uri', prevCanvas['@id']);
-            $('#mdlPrev').text('prev (' + prevCanvas.label + ')');
         } else {
             $('#mdlPrev').prop('disabled', true);
-            $('#mdlPrev').text('prev');
         }        
         if(cvIdx < canvasList.length - 1){
             $('#mdlNext').prop('disabled', false);
             nextCanvas = canvasList[cvIdx + 1];
             $('#mdlNext').attr('data-uri', nextCanvas['@id']);
-            $('#mdlNext').text('next (' + nextCanvas.label + ')');
         } else {
             $('#mdlNext').prop('disabled', true);
-            $('#mdlNext').text('next');
         }
     }
 }
@@ -170,7 +227,7 @@ function getImageService(canvas){
 
 function getThumb(canvas){
     if(!canvas.thumbnail){
-        return "css/padlock.png";
+        return null;
     }
     if(typeof canvas.thumbnail === "string"){
         return canvas.thumbnail;
@@ -188,64 +245,11 @@ function getThumb(canvas){
 function getParticularSizeThumb(canvas, thumbSize){
     var sizes = canvas.thumbnail.service.sizes;
     for(var i=sizes.length - 1; i>=0; i--){
-        if(sizes[i].width == thumbSize || sizes[i].height == thumbSize){
+        if((sizes[i].width == thumbSize || sizes[i].height == thumbSize) && sizes[i].width <= thumbSize && sizes[i].height <= thumbSize){
             return canvas.thumbnail.service['@id'] + "/full/" + sizes[i].width + "," + sizes[i].height + "/0/default.jpg";
         }
     }
     return null;
-}
-
-$('.typeahead').typeahead({
-    minLength: 4,
-    highlight: true
-},
-{
-    name: 'flat-manifs',
-    source: getFlatManifestations,
-    async: true,
-    limit: 50,
-    display: formatFlatManifestation
-
-});
-
-$('.typeahead').bind('typeahead:select', function(ev, suggestion) {
-    loadSuggestion(suggestion);
-});
-
-$('.typeahead').bind('typeahead:asyncrequest', function(ev) {
-    $('#typeaheadWait').show();
-});
-$('.typeahead').bind('typeahead:render', function(ev) {
-    $('#typeaheadWait').hide();
-});
-
-var gfmTimeout;
-var urlRoot = "http://library-uat.wellcomelibrary.org";
-
-function loadSuggestion(suggestion){
-    window.location.href = window.location.pathname + "?manifest=" + urlRoot + "/iiif/" + suggestion.id + "/manifest";
-}
-
-function getFlatManifestations(query, syncResults, asyncResults) {
-    if (gfmTimeout) {
-        clearTimeout(gfmTimeout);
-    }
-    gfmTimeout = setTimeout(function () {
-        console.log('autocomplete - ' + query);
-        $.ajax(urlRoot + "/service/bNumberSuggestion?q=" + query).done(function (results) {
-            asyncResults(results);
-        });
-    }, 300);
-}
-
-function ImFeelingLucky(){
-    $.ajax(urlRoot + "/service/bNumberSuggestion?q=imfeelinglucky").done(function (results) {
-        loadSuggestion(results[0]);    
-    });
-}
-
-function formatFlatManifestation(fm) {
-    return fm.id + " | " + fm.label;
 }
 
 function attemptAuth(imageService){

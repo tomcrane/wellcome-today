@@ -69,9 +69,14 @@ footer {
 }
 
 
+@media (min-width: 900px) {
+    #mainContainer {
+    width: 100%;
+}}
+
 
 @media only screen and (max-width : 480px) {
-    #tcol, footer {
+    #thumbSizeSelector, footer {
         display:none;
     }
     .row.first {

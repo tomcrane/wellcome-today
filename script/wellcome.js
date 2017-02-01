@@ -24,7 +24,7 @@ $(function() {
 });
 
 var gfmTimeout;
-var urlRoot = "http://library-uat.wellcomelibrary.org";
+var urlRoot = "http://wellcomelibrary.org";
 
 function loadSuggestion(suggestion){
     window.location.href = window.location.pathname + "?manifest=" + urlRoot + "/iiif/" + suggestion.id + "/manifest";

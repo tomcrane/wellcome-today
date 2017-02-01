@@ -1,8 +1,7 @@
 <html>
 <head>
-    <meta charset='utf-8'>
     <title>Getting pixels</title>
-    <style type="text/css">
+    <style>
         #manifest { width: 400px; }
         #thumbs { width:220px; border-right: 1px solid #999; margin: 5px; float:left; height:90%; overflow-y:scroll; }        
         #main { margin-top:30px; margin-left:10px; float:left; height:90%;} 
@@ -11,28 +10,27 @@
     </style>
 </head>
 <body>
-    <h1>Super awesome viewer</h1>
-    <div class="selector">    
+    <h1>Minimal viewer</h1>
+    <div>    
         <input id="manifest" type="text" value="http://wellcomelibrary.org/iiif/b18035723/manifest" />
-        <input class="loader" id="gobutton" type="button" value="Go" />
+        <input class="loader" type="button" value="Go" />
     </div>    
     <div id="viewer">    
         <div id="thumbs"></div><div id="main"><img id="bigImage" /></div>
     </div>
     <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
-    <script type="text/javascript">    
+    <script>    
         $('input.loader').click(function() {
             $.getJSON( $('#manifest').val(), function( manifest ) {
                 $('#thumbs').empty();
                 $.each(manifest.sequences[0].canvases, function(i, canvas){
-                    imgSvc = canvas.images[0].resource.service["@id"];
-                    thumbnail = imgSvc + "/full/90,/0/default.jpg";
-                    $('#thumbs').append('<div class="tc">' + canvas.label + '<br/><img class="thumb" data-uri="' + imgSvc + '" src="' + thumbnail + '" /></div>')
+                    iiif = canvas.images[0].resource.service["@id"];
+                    $('#thumbs').append('<div class="tc">' + canvas.label + '<br/><img data-uri="' + iiif + '" src="' + iiif + '/full/90,/0/default.jpg" /></div>')
                 });
-                $('img.thumb').click(function(){
+                $('#thumbs img').click(function(){
                     $('#bigImage').attr('src', $(this).attr('data-uri') + '/full/700,/0/default.jpg');
                 });
-                $('img.thumb')[0].click();
+                $('#thumbs img')[0].click();
             });    
         });    
         $('input.loader').click();

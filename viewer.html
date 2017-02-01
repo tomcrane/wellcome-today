@@ -1,74 +1,41 @@
-
-<!DOCTYPE html>
 <html>
 <head>
     <meta charset='utf-8'>
     <title>Getting pixels</title>
     <style type="text/css">
-
-       #manifest {
-           width: 400px;
-       }
-       
-    	#thumbs {
-            width:200px;
-            border-right: 1px solid #999;
-            margin: 5px;
-            float:left;
-       }        
-        #main {
-            margin-top:30px;
-            margin-left:10px;
-            float:left;
-    	} 
-        .tc {
-            display: inline-block;
-            padding:5px;
-            cursor: pointer;
-    	}
+        #manifest { width: 400px; }
+        #thumbs { width:220px; border-right: 1px solid #999; margin: 5px; float:left; height:90%; overflow-y:scroll; }        
+        #main { margin-top:30px; margin-left:10px; float:left; height:90%;} 
+        .tc { display: inline-block; padding:5px; cursor: pointer; }
+        #bigImage { height:95%; }
     </style>
 </head>
-
 <body>
     <h1>Super awesome viewer</h1>
     <div class="selector">    
         <input id="manifest" type="text" value="http://wellcomelibrary.org/iiif/b18035723/manifest" />
-        <select id="size">
-            <option>600</option>
-            <option>800</option>
-            <option>1000</option>
-        </select>
         <input class="loader" id="gobutton" type="button" value="Go" />
+    </div>    
+    <div id="viewer">    
+        <div id="thumbs"></div><div id="main"><img id="bigImage" /></div>
     </div>
-    
-<div id="viewer">    
-    <div id="thumbs">
-        </div>
-    <div id="main">
-        <img id="bigImage" />
-    </div>
-</div>
-
-<script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
-<script type="text/javascript">    
-    $('input.loader').click(function() {
-        var uri = $('#manifest').val();
-        var size = $('#size').val();
-        $.getJSON( uri, function( manifest ) {
-            var thumbs = $('#thumbs');
-            thumbs.empty();
-            $.each(manifest.sequences[0].canvases, function(i, canvas){
-                thumbs.append('<div class="tc">' + canvas.label + '<br/><img class="thumb" data-uri="' + canvas.images[0].resource.service["@id"] + '" src="' + canvas.thumbnail + '" /></div>')
-            });
-            $('img.thumb').click(function(){
-                var src = $(this).attr('data-uri') + '/full/' + size + ',/0/default.jpg';
-                $('#bigImage').attr('src', src);
-            });
-            $('img.thumb')[0].click();
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript">    
+        $('input.loader').click(function() {
+            $.getJSON( $('#manifest').val(), function( manifest ) {
+                $('#thumbs').empty();
+                $.each(manifest.sequences[0].canvases, function(i, canvas){
+                    imgSvc = canvas.images[0].resource.service["@id"];
+                    thumbnail = imgSvc + "/full/90,/0/default.jpg";
+                    $('#thumbs').append('<div class="tc">' + canvas.label + '<br/><img class="thumb" data-uri="' + imgSvc + '" src="' + thumbnail + '" /></div>')
+                });
+                $('img.thumb').click(function(){
+                    $('#bigImage').attr('src', $(this).attr('data-uri') + '/full/700,/0/default.jpg');
+                });
+                $('img.thumb')[0].click();
+            });    
         });    
-    });    
-    $('input.loader').click();
-</script>
-
+        $('input.loader').click();
+    </script>
 </body>
 </html>

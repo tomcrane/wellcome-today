@@ -1,6 +1,6 @@
 
 $(function() {
-    $('#imfeelinglucky').bind('click', ImFeelingLucky);
+    $('#imfeelinglucky').on('click', ImFeelingLucky);
     $('.typeahead').typeahead({
         minLength: 4,
         highlight: true

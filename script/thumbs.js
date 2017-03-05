@@ -36,6 +36,7 @@ var rv="";
 rv += "<div class=\"row viewer\">";
 rv += "    <div class=\"col-md-12 iiif\">";
 rv += "        <h3 id=\"title\"><\/h3>";
+rv += "        <a href=\"\" id=\"annoDump\">view text and images<\/a>";
 rv += "        <div id=\"thumbs\">";
 rv += "            <img src=\"css\/spin24.gif\" id='manifestWait' \/>";
 rv += "        <\/div>";
@@ -90,6 +91,7 @@ function load(manifest){
     var thumbs = $('#thumbs');
     thumbs.empty();
     $('#title').text(manifest.label);
+    $('#annoDump').attr("href", "annodump.html?manifest=" + manifest["@id"]);
     if(manifest.mediaSequences){
         thumbs.append("<i>This is not a normal IIIF manifest - it's an 'IxIF' extension for audio, video, born digital. This viewer does not support them (yet).</i>");
     } else {
@@ -111,7 +113,14 @@ function drawThumbs(){
         if(!thumb){ 
             thumbHtml += '<div class="thumb-no-access">Image not available</div></div>';
         } else {
-            thumbHtml += '<img class="thumb" title="' + canvas.label + '" data-uri="' + canvas['@id'] + '" src="' + thumb + '" /></div>';
+            // This is a temporary hack to get sizes until sorty, getThumbnail etc are unified with this
+            var sizeParam = /full\/([^\/]*)\/(.*)/g.exec(thumb);
+            var dimensions = "";
+            if(sizeParam && sizeParam[1] && sizeParam[1].indexOf(",") > 0) {
+                wh = sizeParam[1].split(",");
+                dimensions = "width='" + wh[0] + "' height='" + wh[1] + "'";
+            }
+            thumbHtml += '<img class="thumb" title="' + canvas.label + '" data-uri="' + canvas['@id'] + '" data-src="' + thumb + '" ' + dimensions + '/></div>';
         }
         thumbs.append(thumbHtml);
     } 
@@ -119,6 +128,7 @@ function drawThumbs(){
         selectForModal($(this).attr('data-uri'), $(this));
         $('#imgModal').modal();
     });
+    $("img.thumb").unveil(300);
 }
 
 function makeThumbSizeSelector(){
@@ -375,3 +385,63 @@ function getServices(info) {
     }
     return svcInfo;
 }
+
+
+/**
+ * jQuery Unveil
+ * A very lightweight jQuery plugin to lazy load images
+ * http://luis-almeida.github.com/unveil
+ *
+ * Licensed under the MIT license.
+ * Copyright 2013 Lu�s Almeida
+ * https://github.com/luis-almeida
+ */
+
+; (function ($) {
+
+    $.fn.unveil = function (threshold, callback) {
+
+        var $v = $(".viewer"), $w = $(window),
+            th = threshold || 0,
+            retina = window.devicePixelRatio > 1,
+            attrib = retina ? "data-src-retina" : "data-src",
+            images = this,
+            loaded;
+
+        this.one("unveil", function () {
+            var source = this.getAttribute(attrib);
+            source = source || this.getAttribute("data-src");
+            if (source) {
+                console.log("setting src " + source);
+                this.setAttribute("src", source);
+                if (typeof callback === "function") callback.call(this);
+            }
+        });
+
+        function unveil() {
+            var inview = images.filter(function () {
+                var $e = $(this);
+                if ($e.is(":hidden")) return;
+
+                var wt = $w.scrollTop(),
+                    wb = wt + $w.height(),
+                    et = $e.offset().top,
+                    eb = et + $e.height();
+
+                return eb >= wt - th && et <= wb + th;
+            });
+
+            loaded = inview.trigger("unveil");
+            images = images.not(loaded);
+        }
+
+        $w.on("scroll.unveil resize.unveil lookup.unveil", unveil);
+        $v.on("scroll.unveil resize.unveil lookup.unveil", unveil);
+
+        unveil();
+
+        return this;
+
+    };
+
+})(window.jQuery);

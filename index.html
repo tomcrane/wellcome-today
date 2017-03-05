@@ -1,97 +1,65 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset='utf-8'>
-    <title>Wellcome Today</title>
-    <style type="text/css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6em; }
 
-    	.wrapper {
-            position: fixed;
-            top:3em;
-            left: 0;
-            bottom: 0;
-            right: 0;
-            overflow: auto;
-    	}
-        
-    	#osd {
-            background-color: #fff;
-            width:100%;
-    		height:100%; 
-    	}
-        
-        #collection {
-            width:30em; 
-    	}
     </style>
-    <script src="openseadragon/openseadragon.min.js"></script>
-    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
 </head>
-
 <body>
-    <div class="selector">
-        <input class="loader" id="recents" type="button" value="Most recent 24" data-uri="http://wellcomelibrary.org/service/collections/recently-digitised/24/" />
-        <input class="loader" id="lucky" type="button" value="Lucky dip 24" data-uri="http://wellcomelibrary.org/service/collections/lucky-dip/24/"  />
-        |
-        <input id="collection" type="text" placeholder="(Collection URL)"  />
-        <input class="loader" id="gobutton" type="button" value="Go" />
-        <span id="status" />
-    </div>
-    
-<div class="wrapper">    
-    
-    <div id="osd" class="openseadragon"></div>
+    <h1>Demos and experiments using Wellcome IIIF resources</h1>
 
-</div>
+    <p><strong><a href="thumbs.html?manifest=http://wellcomelibrary.org/iiif/b28047345/manifest">Thumbs</a></strong>
+    <br/>
+    View thumbnails for Wellcome IIIF DLCS endpoints</p>
 
-<script type="text/javascript">
-    
-    var viewer;
-    
-    $('input.loader').click(function() {
-        var uri = $(this).attr('data-uri');
-        if(uri){
-            $('#collection').val(uri);
-        } else {
-            uri = $('#collection').val();
-        }
-        loadCollection(uri);
-    });
+    <p><strong><a href="annodump.html?manifest=http://wellcomelibrary.org/iiif/b28047345/manifest">Annotation dump</a></strong>
+    <br/>
+    View otherContent referenced from Wellcome canvases</p>
 
-    function loadCollection(collection){
-        
-        $('#status').text('loading collection...');
-        var max = 100;    
-        $.getJSON( collection, function( data ) {
-            var thumbServices = [];
-            $.each(data.manifests, function(i, m){
-                if(m.thumbnail && m.thumbnail.service && max-- > 0){
-                    thumbServices.push(m.thumbnail.service["@id"] + "/info.json");    
-                }
-            });
-            var cols = Math.ceil(Math.sqrt(thumbServices.length));
-            if(viewer){
-                viewer.removeHandler('open');
-                viewer.destroy();
-                viewer = null;
-            }
-            $('#status').text('loading images...');
-            viewer = OpenSeadragon({
-                id:                 "osd",
-                prefixUrl:          "openseadragon/images/",            
-                collectionMode:     true,
-                collectionColumns:  cols, 
-                tileSources: thumbServices
-            });  
-            viewer.addHandler('open', function(data){
-                $('#status').text('loaded.');
-            });
-        });       
-    }
+    <p><strong><a href="today.html">Wellcome today</a></strong>
+    <br/>
+    Show collections in Open Seadragon's collection mode</p>
+
+    <p><strong><a href="viewer.html">Viewer</a></strong>
+    <br/>
+    How small can a viewer be?</p>
     
+    <p><strong><a href="http://tomcrane.github.io/iiif-expts/getthumbnail/">getThumbnail</a></strong>
+    <br/>
+    Determine the best possible thumbnail for a IIIF resource</p>
+
+    <p><strong><a href="http://tomcrane.github.io/scratch/osd/iiif-sizes.html">Sizes only</a></strong>
+    <br/>Deep zoom from legacy size sets in IIIF</p>
+
+    <p><strong><a href="http://tomcrane.github.io/scratch/osd/single-image.html">Minimal OSD</a></strong>
+    <br/>
+    Very simple OpenSeadrgaon + IIIF</p>
+
+    <p><strong><a href="https://github.com/dlcs/sorting-room">Sorting room</a></strong>
+    <br/>
+    Make new detail IIIF manifests out of archival resources... demo soon...</p>
+    
+    <p><strong><a href="http://tomcrane.github.io/iiif-expts/">HTTP status of image request</a></strong>
+    <br/>
+    How much can you know about a broken image?</p>
+    
+    <p><strong><a href="http://tomcrane.github.io/iiif-expts/cache/auth.html">Cache-bust authed image</a></strong>
+    <br/>
+    Use hash frag to assign a new image source</p>
+    
+    <p><strong><a href="http://tomcrane.github.io/iiifauth/acac.html">withCredentials vs token</a></strong>
+    <br/>
+    IIIF Auth test</p>
 
     
-</script>
+
+
+
 
 </body>
 </html>

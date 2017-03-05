@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Wellcome Today</title>
+    <style type="text/css">
+
+    	.wrapper {
+            position: fixed;
+            top:3em;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            overflow: auto;
+    	}
+        
+    	#osd {
+            background-color: #fff;
+            width:100%;
+    		height:100%; 
+    	}
+        
+        #collection {
+            width:30em; 
+    	}
+    </style>
+    <script src="openseadragon/openseadragon.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
+</head>
+
+<body>
+    <div class="selector">
+        <input class="loader" id="recents" type="button" value="Most recent 24" data-uri="http://wellcomelibrary.org/service/collections/recently-digitised/24/" />
+        <input class="loader" id="lucky" type="button" value="Lucky dip 24" data-uri="http://wellcomelibrary.org/service/collections/lucky-dip/24/"  />
+        |
+        <input id="collection" type="text" placeholder="(Collection URL)"  />
+        <input class="loader" id="gobutton" type="button" value="Go" />
+        <span id="status" />
+    </div>
+    
+<div class="wrapper">    
+    
+    <div id="osd" class="openseadragon"></div>
+
+</div>
+
+<script type="text/javascript">
+    
+    var viewer;
+    
+    $('input.loader').click(function() {
+        var uri = $(this).attr('data-uri');
+        if(uri){
+            $('#collection').val(uri);
+        } else {
+            uri = $('#collection').val();
+        }
+        loadCollection(uri);
+    });
+
+    function loadCollection(collection){
+        
+        $('#status').text('loading collection...');
+        var max = 100;    
+        $.getJSON( collection, function( data ) {
+            var thumbServices = [];
+            $.each(data.manifests, function(i, m){
+                if(m.thumbnail && m.thumbnail.service && max-- > 0){
+                    thumbServices.push(m.thumbnail.service["@id"] + "/info.json");    
+                }
+            });
+            var cols = Math.ceil(Math.sqrt(thumbServices.length));
+            if(viewer){
+                viewer.removeHandler('open');
+                viewer.destroy();
+                viewer = null;
+            }
+            $('#status').text('loading images...');
+            viewer = OpenSeadragon({
+                id:                 "osd",
+                prefixUrl:          "openseadragon/images/",            
+                collectionMode:     true,
+                collectionColumns:  cols, 
+                tileSources: thumbServices
+            });  
+            viewer.addHandler('open', function(data){
+                $('#status').text('loaded.');
+            });
+        });       
+    }
+    
+
+    
+</script>
+
+</body>
+</html>

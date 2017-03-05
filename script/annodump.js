@@ -10,10 +10,16 @@ $(function() {
 });
 
 function setPersistentOptions(){
+    var marker = localStorage.getItem("marker");
+    localStorage.setItem("marker", "visited");
     $(".persistent-options input[type='checkbox']").each(function(){
         var checked = (localStorage.getItem(this.id) == 'true');
         $(this).prop("checked", checked);
         if(this.id == "chemistAndDruggist") setChemistAndDruggistAction(checked);
+        if(this.id == "showIllustrations" && !marker){
+            $(this).prop("checked", true);   // default to illustrations
+            localStorage.setItem(this.id, "true");
+        }
     });
 }
 

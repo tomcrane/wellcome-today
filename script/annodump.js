@@ -65,6 +65,12 @@ function load(manifest){
     $('#title').text(manifest.label);
     $('#iiifManifestUri').attr("href", manifest["@id"]);
     $('#thumbViewerUri').attr("href", "thumbs.html?manifest=" + manifest["@id"]);
+    if(manifest["@id"].indexOf("wellcomelibrary.org")!= -1){
+        var bnum = manifest["@id"].split("/")[4];
+        if(bnum){
+            $('#itemPageUri').attr("href", "http://wellcomelibrary.org/item/" + bnum);
+        }
+    }
     if(manifest.mediaSequences){
         alert("This is not a normal IIIF manifest - it's an 'IxIF' extension for audio, video, born digital. No anno support yet!");
     } else {

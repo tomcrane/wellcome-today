@@ -92,6 +92,12 @@ function load(manifest){
     thumbs.empty();
     $('#title').text(manifest.label);
     $('#annoDump').attr("href", "annodump.html?manifest=" + manifest["@id"]);
+    if(manifest["@id"].indexOf("wellcomelibrary.org")!= -1){
+        var bnum = manifest["@id"].split("/")[4];
+        if(bnum){
+            $('#annoDump').after(" | <a href='http://wellcomelibrary.org/item/" + bnum + "'>item page</a>");
+        }
+    }
     if(manifest.mediaSequences){
         thumbs.append("<i>This is not a normal IIIF manifest - it's an 'IxIF' extension for audio, video, born digital. This viewer does not support them (yet).</i>");
     } else {

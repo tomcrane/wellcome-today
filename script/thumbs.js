@@ -95,7 +95,7 @@ function load(manifest){
     if(manifest["@id"].indexOf("wellcomelibrary.org")!= -1){
         var bnum = manifest["@id"].split("/")[4];
         if(bnum){
-            $('#annoDump').after(" | <a href='http://wellcomelibrary.org/item/" + bnum + "'>item page</a>");
+            $('#annoDump').after(" | <a href='" + manifest["@id"] + "'>manifest</a> | <a href='http://universalviewer.io/examples/?manifest=" + manifest["@id"] + "'>UV</a> | <a href='http://wellcomelibrary.org/item/" + bnum + "'>item page</a> ");
         }
     }
     if(manifest.mediaSequences){

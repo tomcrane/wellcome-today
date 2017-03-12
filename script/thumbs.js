@@ -4,6 +4,7 @@ var canvasList;
 var bigImage;
 var authDo;
 var assumeFullMax = false;
+var viewer;
 
 var pop="";
 pop += "<div class=\"modal fade\" id=\"imgModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"mdlLabel\">";
@@ -14,7 +15,8 @@ pop += "                <button type=\"button\" class=\"close\" data-dismiss=\"m
 pop += "                <h4 class=\"modal-title\" id=\"mdlLabel\"><\/h4>";
 pop += "            <\/div>";
 pop += "            <div class=\"modal-body\">            ";
-pop += "                <img id=\"bigImage\" class=\"img-responsive\" \/>";
+pop += "                <img id=\"bigImage\" class=\"img-responsive osd\" \/>";
+pop += "                <div id=\"viewer\" class=\"osd-viewer\"></div>";
 pop += "                <div class=\"auth-ops\" id=\"authOps\">";
 pop += "                    <h5>Header<\/h5>";
 pop += "                    <div class=\"auth-desc\">";
@@ -63,9 +65,38 @@ $(function() {
     bigImage.bind('error', function (e) {
         attemptAuth($(this).attr('data-uri'));
     });
+    bigImage.bind('click', function (e) {
+        launchOsd($(this).attr('data-uri') + "/info.json");
+    });
     authDo = $('#authDo');
     authDo.bind('click', doClickthroughViaWindow);
 });
+
+function launchOsd(info){
+    var $osdElement = $("#viewer");
+    if(viewer){
+        viewer.destroy();
+        viewer = null;
+    }
+    viewer = OpenSeadragon({
+        element: $osdElement[0],
+        prefixUrl: "openseadragon/images/"
+    });
+    viewer.addHandler("full-screen", function(ev){
+        if (!ev.fullScreen) {
+            $osdElement.hide();
+            bigImage.show();
+        }
+    });
+    // TODO - if we have an access token, fetch the 
+    // info.json ourselves (with Authorisation header) and pass to OSD
+    viewer.addTiledImage({
+        tileSource: info
+    });
+    $osdElement.show();
+    bigImage.hide();
+    viewer.setFullScreen(true);
+}
 
 
 

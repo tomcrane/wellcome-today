@@ -7,8 +7,13 @@
     <title>Document</title>
     <style>
         body { font-family: sans-serif; line-height: 1.6em; }
-
     </style>
+    <script>
+        if (location.protocol != 'http:')
+        {
+         location.href = 'http:' + window.location.href.substring(window.location.protocol.length);
+        }
+    </script>
 </head>
 <body>
     <h1>Demos and experiments using Wellcome IIIF resources</h1>

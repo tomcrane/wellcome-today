@@ -103,4 +103,5 @@ footer {
 .canvas { clear:both; border-top:1px solid #999;padding-top: 1em}
 /*#annos img { float:left; clear:both;}*/
 #annos .annoInfo { margin-left:110px; }
+#tocs .annoInfo { margin-left:110px; }
 #afterAll { clear:both; marging-top:5px;padding-bottom: 15px;}

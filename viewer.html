@@ -1,39 +1,39 @@
 <html>
 <head>
-    <title>Getting pixels</title>
+    <title>tiny</title>
     <style>
-        #manifest { width: 400px; }
-        #thumbs { width:220px; border-right: 1px solid #999; margin: 5px; float:left; height:90%; overflow-y:scroll; }        
+        #mf { width: 400px; }
+        #th { width:220px; border-right: 1px solid #999; margin: 5px; float:left; height:90%; overflow-y:scroll; }        
         #main { margin-top:30px; margin-left:10px; float:left; height:90%;} 
         .tc { display: inline-block; padding:5px; cursor: pointer; }
-        #bigImage { height:95%; }
+        #big { height:95%; }
     </style>
 </head>
 <body>
-    <h1>Minimal viewer</h1>
+    <h1>Minimal</h1>
     <div>    
-        <input id="manifest" type="text" value="http://wellcomelibrary.org/iiif/b18035723/manifest" />
-        <input class="loader" type="button" value="Go" />
+        <input id="mf" type="text" value="http://wellcomelibrary.org/iiif/b18035723/manifest" />
+        <input class="go" type="button" value="Go" />
     </div>    
-    <div id="viewer">    
-        <div id="thumbs"></div><div id="main"><img id="bigImage" /></div>
+    <div>    
+        <div id="th"></div><div id="main"><img id="big" /></div>
     </div>
     <script src="https://code.jquery.com/jquery-1.11.1.min.js"></script>
     <script>    
-        $('input.loader').click(function() {
-            $.getJSON( $('#manifest').val(), function( manifest ) {
-                $('#thumbs').empty();
-                $.each(manifest.sequences[0].canvases, function(i, canvas){
-                    iiif = canvas.images[0].resource.service["@id"];
-                    $('#thumbs').append('<div class="tc">' + canvas.label + '<br/><img data-uri="' + iiif + '" src="' + iiif + '/full/90,/0/default.jpg" /></div>')
+        $('input.go').click(function() {
+            $.getJSON( $('#mf').val(), function( mf ) {
+                $('#th').empty();
+                $.each(mf.sequences[0].canvases, function(i, cv){
+                    iiif = cv.images[0].resource.service["@id"];
+                    $('#th').append('<div class="tc">' + cv.label + '<br/><img data-uri="' + iiif + '" src="' + iiif + '/full/90,/0/default.jpg" /></div>')
                 });
-                $('#thumbs img').click(function(){
-                    $('#bigImage').attr('src', $(this).attr('data-uri') + '/full/700,/0/default.jpg');
+                $('#th img').click(function(){
+                    $('#big').attr('src', $(this).attr('data-uri') + '/full/700,/0/default.jpg');
                 });
-                $('#thumbs img')[0].click();
+                $('#th img')[0].click();
             });    
         });    
-        $('input.loader').click();
+        $('input.go').click();
     </script>
 </body>
 </html>

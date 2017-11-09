@@ -20,8 +20,8 @@
     </div>
     <script>    
         function $(id){ return document.getElementById(id)};
-        function p(w){ return '/full/' + w + ',/0/default.jpg'}
-        function thm(){ $('big').src=this.getAttribute('data-uri') + p(700); }
+        function p(w){ return '/full/' + w + ',/0/default.jpg'};
+        function thm(){ $('big').src=this.getAttribute('data-uri') + p(700); };
         function go(){
             rq = new XMLHttpRequest();
             rq.open('GET', $('mf').value, true);
@@ -32,7 +32,7 @@
                 s = "";
                 mf.sequences[0].canvases.forEach(function(cv,i){
                     iiif = cv.images[0].resource.service["@id"];
-                    s += '<div class="tc">' + cv.label + '<br/><img id="im' + i + '" data-uri="' + iiif + '" src="' + iiif + p(90) + '" /></div>'                
+                    s += '<div class="tc">' + cv.label + '<br/><img id="im' + i + '" data-uri="' + iiif + '" src="' + iiif + p(90) + '" /></div>';            
                 });
                 $('th').innerHTML = s;
                 document.querySelectorAll('#th img').forEach(function(th){th.addEventListener('click', thm)});

@@ -73,6 +73,8 @@ $(function() {
 });
 
 function launchOsd(info){
+    // fetch the info.json ourselves so we can ignore HTTP errors from
+    // clickthrough auth. This is a cheat for clickthrough.
     var $osdElement = $("#viewer");
     if(viewer){
         viewer.destroy();
@@ -88,14 +90,21 @@ function launchOsd(info){
             bigImage.show();
         }
     });
-    // TODO - if we have an access token, fetch the 
-    // info.json ourselves (with Authorisation header) and pass to OSD
-    viewer.addTiledImage({
-        tileSource: info
-    });
+
     $osdElement.show();
     bigImage.hide();
     viewer.setFullScreen(true);
+
+    doInfoAjax(info, loadTileSource);
+}
+
+function loadTileSource(jqXHR, textStatus) {
+    var infoJson = $.parseJSON(jqXHR.responseText);
+    // TODO - if we have an access token, fetch the 
+    // info.json ourselves (with Authorisation header) and pass to OSD
+    viewer.addTiledImage({
+        tileSource: infoJson
+    });
 }
 
 

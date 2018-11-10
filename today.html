@@ -47,6 +47,15 @@
 <script type="text/javascript">
     
     var viewer;
+
+
+    $(function() {
+        var qs = /collection=(.*)/g.exec(window.location.search);
+        if(qs && qs[1]){  
+            loadCollection(qs[1]);
+            $('#collection').val(qs[1]);
+        }
+    });
     
     $('input.loader').click(function() {
         var uri = $(this).attr('data-uri');

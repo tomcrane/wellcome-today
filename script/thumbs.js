@@ -50,6 +50,9 @@ rv += "    <hr \/>";
 rv += "    <p>Thumbnail viewer<\/p>";
 rv += "<\/footer>";
 
+function betarise(dlcsid){
+    return dlcsid.replace("//dlcs.io/", "//beta.dlcs.io/");
+}
 
 $(function() {
     $('#mainContainer').append(rv);
@@ -261,9 +264,9 @@ function getMainImg(canvas){
     // so instead
     var bigThumb = getParticularSizeThumb(canvas, 1024);
     if(bigThumb || assumeFullMax){
-        return canvas.thumbnail.service['@id'] + "/full/max/0/default.jpg";
+        return betarise(canvas.thumbnail.service['@id']) + "/full/max/0/default.jpg";
     } else {
-        return canvas.images[0].resource['@id'];
+        return betarise(canvas.images[0].resource['@id']);
     }
 }
 
@@ -278,7 +281,7 @@ function getImageService(canvas){
             }
         }
     }
-    return imgService['@id'];
+    return betarise(imgService['@id']);
 }
 
 function getThumb(canvas){
@@ -288,7 +291,7 @@ function getThumb(canvas){
     if(typeof canvas.thumbnail === "string"){
         return canvas.thumbnail;
     }
-    var thumb = canvas.thumbnail['@id'];
+    var thumb = betarise(canvas.thumbnail['@id']);
     if(canvas.thumbnail.service && canvas.thumbnail.service.sizes){
         // manifest gives thumb size hints
         // dumb version exact match and assumes ascending - TODO: https://gist.github.com/tomcrane/093c6281d74b3bc8f59d
@@ -302,7 +305,7 @@ function getParticularSizeThumb(canvas, thumbSize){
     var sizes = canvas.thumbnail.service.sizes;
     for(var i=sizes.length - 1; i>=0; i--){
         if((sizes[i].width == thumbSize || sizes[i].height == thumbSize) && sizes[i].width <= thumbSize && sizes[i].height <= thumbSize){
-            return canvas.thumbnail.service['@id'] + "/full/" + sizes[i].width + "," + sizes[i].height + "/0/default.jpg";
+            return betarise(canvas.thumbnail.service['@id']) + "/full/" + sizes[i].width + "," + sizes[i].height + "/0/default.jpg";
         }
     }
     return null;

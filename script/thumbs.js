@@ -60,6 +60,15 @@ function setGlyph($btn, glyph, text){
     $btn.html("<span class=\"glyphicon glyphicon-" + glyph + "\" aria-hidden=\"true\"></span> " + text);
 }
 
+function stopSpeaking(){
+    if(synth){
+        synth.cancel();
+        $(".btn-read").each(function(){ 
+            setGlyph($(this), "volume-up", $(this).attr('data-cta')); 
+        });
+    }
+}
+
 $(function() {
     $('#mainContainer').append(rv);
     processQueryString();    
@@ -67,6 +76,7 @@ $(function() {
     $('#authOps').hide();
     $('.modal-footer').show();
     $('button.btn-prevnext').click(function(){
+        stopSpeaking();
         canvasId = $(this).attr('data-uri');
         selectForModal(canvasId, $("img.thumb[data-uri='" + canvasId + "']"));
     });
@@ -76,10 +86,7 @@ $(function() {
     $('.btn-read').click(function(){
         $("#lineHighlight").hide();
         if(synth && synth.speaking){
-            synth.cancel();
-            $(".btn-read").each(function(){ 
-                setGlyph($(this), "volume-up", $(this).attr('data-cta')); 
-            });
+            stopSpeaking();
         } else {
             canvasId = $(this).attr('data-uri');
             $(".btn-read").each(function(){ 
@@ -88,6 +95,9 @@ $(function() {
             readCanvas(canvasId, $(this).attr('data-read'));
         }
     });
+    $('#imgModal').on('hidden.bs.modal', function () {
+        stopSpeaking();
+    })
     bigImage = $('#bigImage');
     bigImage.bind('error', function (e) {
         attemptAuth($(this).attr('data-uri'));

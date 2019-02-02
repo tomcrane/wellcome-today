@@ -99,6 +99,13 @@ footer {
     cursor:pointer;
 }
 
+#lineHighlight {
+    width:200px;
+    height: 100px;    
+    background:rgba(0, 220, 210, 0.3);
+    position: absolute;
+}
+
 .imgContainer { width:100px; float:left;}
 .canvas { clear:both; border-top:1px solid #999;padding-top: 1em}
 /*#annos img { float:left; clear:both;}*/

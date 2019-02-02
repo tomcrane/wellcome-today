@@ -5,6 +5,7 @@ var bigImage;
 var authDo;
 var assumeFullMax = false;
 var viewer;
+var synth = window.speechSynthesis;
 
 var pop="";
 pop += "<div class=\"modal fade\" id=\"imgModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"mdlLabel\">";
@@ -15,7 +16,10 @@ pop += "                <button type=\"button\" class=\"close\" data-dismiss=\"m
 pop += "                <h4 class=\"modal-title\" id=\"mdlLabel\"><\/h4>";
 pop += "            <\/div>";
 pop += "            <div class=\"modal-body\">            ";
-pop += "                <img id=\"bigImage\" class=\"img-responsive osd\" \/>";
+pop += "                <div id=\"imgContainer\">";
+pop += "                     <img id=\"bigImage\" class=\"img-responsive osd\" \/>";
+pop += "                     <div id=\"lineHighlight\"></div>";
+pop += "                </div>";
 pop += "                <div id=\"viewer\" class=\"osd-viewer\"></div>";
 pop += "                <div class=\"auth-ops\" id=\"authOps\">";
 pop += "                    <h5>Header<\/h5>";
@@ -25,6 +29,8 @@ pop += "                    <button id=\"authDo\" type=\"button\" class=\"btn bt
 pop += "                <\/div>";
 pop += "            <\/div>";
 pop += "            <div class=\"modal-footer\">";
+pop += "                <button id=\"mdlRead\" type=\"button\" class=\"btn btn-info pull-left btn-read\" data-uri=\"\" data-cta=\"Read All\" data-ctia=\"Cancel\" data-read=\"all\"> <\/button>";
+pop += "                <button id=\"mdlReadLines\" type=\"button\" class=\"btn btn-info pull-left btn-read\" data-uri=\"\" data-cta=\"Read Lines\" data-ctia=\"Cancel\" data-read=\"lines\"> <\/button>";
 pop += "                <button id=\"mdlPrev\" type=\"button\" class=\"btn btn-primary btn-prevnext\" data-uri=\"\">Prev<\/button>";
 pop += "                <button id=\"mdlNext\" type=\"button\" class=\"btn btn-primary btn-prevnext\" data-uri=\"\">Next<\/button>";
 pop += "            <\/div>";
@@ -50,6 +56,9 @@ rv += "    <hr \/>";
 rv += "    <p>Thumbnail viewer<\/p>";
 rv += "<\/footer>";
 
+function setGlyph($btn, glyph, text){
+    $btn.html("<span class=\"glyphicon glyphicon-" + glyph + "\" aria-hidden=\"true\"></span> " + text);
+}
 
 $(function() {
     $('#mainContainer').append(rv);
@@ -60,6 +69,24 @@ $(function() {
     $('button.btn-prevnext').click(function(){
         canvasId = $(this).attr('data-uri');
         selectForModal(canvasId, $("img.thumb[data-uri='" + canvasId + "']"));
+    });
+    $(".btn-read").each(function(){ 
+        setGlyph($(this), "volume-up", $(this).attr('data-cta')); 
+    });
+    $('.btn-read').click(function(){
+        $("#lineHighlight").hide();
+        if(synth && synth.speaking){
+            synth.cancel();
+            $(".btn-read").each(function(){ 
+                setGlyph($(this), "volume-up", $(this).attr('data-cta')); 
+            });
+        } else {
+            canvasId = $(this).attr('data-uri');
+            $(".btn-read").each(function(){ 
+                setGlyph($(this), "volume-off", $(this).attr('data-ctia')); 
+            });
+            readCanvas(canvasId, $(this).attr('data-read'));
+        }
     });
     bigImage = $('#bigImage');
     bigImage.bind('error', function (e) {
@@ -216,6 +243,8 @@ function makeThumbSizeSelector(){
 }
 
 function selectForModal(canvasId, $image) {
+    if(synth) synth.cancel();
+    $("#lineHighlight").hide();
     $('img.thumb').css('border', '2px solid white');
     $image.css('border', '2px solid tomato');
     var cvIdx = findCanvasIndex(canvasId);
@@ -226,7 +255,12 @@ function selectForModal(canvasId, $image) {
         bigImage.attr('src', imgToLoad); // may fail if auth
         bigImage.attr('data-src', imgToLoad); // to preserve
         bigImage.attr('data-uri', getImageService(canvas));
-        $('#mdlLabel').text(canvas.label);
+        $('#mdlLabel').text(canvas.label);        
+        if(synth && canvas.otherContent){
+            $('.btn-read').attr('data-uri', canvas['@id']);
+        } else {
+            $('.btn-read').hide();    
+        }
         if(cvIdx > 0){
             $('#mdlPrev').prop('disabled', false);
             prevCanvas = canvasList[cvIdx - 1];
@@ -242,6 +276,59 @@ function selectForModal(canvasId, $image) {
             $('#mdlNext').prop('disabled', true);
         }
     }
+}
+
+function readCanvas(canvasId, readBehaviour){    
+    var cvIdx = findCanvasIndex(canvasId);
+    var canvas = canvasList[cvIdx];    
+    $.getJSON(canvas.otherContent[0]["@id"], function(annoList){
+        readAnnoLines(canvas, annoList, readBehaviour);
+    });
+}
+
+function readAnnoLines(canvas, annoList, readBehaviour){
+    linesToSpeak = [];
+    textToSpeak = "";
+    for(var i=0; i<annoList.resources.length; i++){
+        var res = annoList.resources[i];        
+        if(res.motivation == "sc:painting" && res.resource["@type"] == "cnt:ContentAsText"){
+            if(readBehaviour == "all"){
+                textToSpeak += " ";
+                textToSpeak += res.resource.chars;
+            } else {
+                let line = {
+                    text: res.resource.chars,
+                    lineToSpeak: new SpeechSynthesisUtterance(res.resource.chars),
+                    region: /#xywh=(.*)/g.exec(res.on)[1]
+                };                     
+                linesToSpeak.push(line);
+                line.lineToSpeak.onstart = function(){
+                    highlightSpokenLine(line, canvas);
+                }       
+            }
+        }
+    }
+    if(readBehaviour == "all"){
+        synth.speak(new SpeechSynthesisUtterance(textToSpeak));
+    } else {
+        for(var i=0; i< linesToSpeak.length; i++){
+            // enqueue:
+            synth.speak(linesToSpeak[i].lineToSpeak);
+        } 
+    }
+}
+
+function highlightSpokenLine(line, canvas){
+    // get the box on bigImage
+    var scaleFactor = bigImage[0].clientWidth / canvas.width;
+    var xywh = line.region.split(",");
+    var stylePos = ["left", "top", "width", "height"];
+    var offsets = [bigImage[0].offsetLeft, bigImage[0].offsetTop, 0, 0];
+    var hl = $("#lineHighlight");
+    xywh.map(function(val, idx){
+        hl.css(stylePos[idx], (val*scaleFactor + offsets[idx]) + "px");
+    });
+    hl.show();
 }
 
 function findCanvasIndex(canvasId){

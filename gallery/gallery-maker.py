@@ -1,18 +1,21 @@
 import requests
 import sys
+from random import shuffle
 
 def main():    
     ids = []
     with open("ids.txt") as f:
         ids = [x.strip() for x in f.readlines()]
 
-    print(ids)
+    shuffle(ids)
     template = "https://wellcomelibrary.org/iiif/{0}/manifest"
     items = ""
     for id in ids:
+        print("fetching " + id)
         resp = requests.get(template.format(id))
         iiif = resp.json()
         if iiif["@type"] == "sc:Collection":
+            print("A collection, so getting first manifest")
             resp = requests.get(iiif["manifests"][0]["@id"])
             iiif = resp.json()
         viewerlink = "http://tomcrane.github.io/wellcome-today/thumbs.html?manifest=https://wellcomelibrary.org/iiif/{0}/manifest".format(id)
@@ -24,7 +27,7 @@ def main():
             size = service["sizes"][0]
             s = s + thumb.format(viewerlink, service["@id"], size["width"], size["height"])
             counter = counter + 1
-            if counter == 6:
+            if counter == 10:
                 break
         s = s + "\n</div></div>"
         items = items + s

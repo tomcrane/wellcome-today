@@ -28,6 +28,7 @@ def main():
             s = s + thumb.format(viewerlink, service["@id"], size["width"], size["height"])
             counter = counter + 1
             if counter == 10:
+                s = s + '\n <a href="{0}">more...</a>'.format(viewerlink)
                 break
         s = s + "\n</div></div>"
         items = items + s

@@ -143,7 +143,7 @@ function appendCanvas(i, canvas){
 }
 
 function makeCanvasHtml(canvas, canvasDiv, annoList){
-    var html = "<div class='imgContainer'><a href='" + canvas.images[0].resource["@id"] + "'><img src='" + canvas.thumbnail["@id"] + "' /></a><br/>" + canvas.label + "</div>";
+    var html = "<div class='imgContainer'><a href='" + canvas.images[0].resource["@id"] + "'><img src='" + getParticularSizeThumb(canvas, 100) + "' /></a><br/>" + canvas.label + "</div>";
     if(annoList){
         html += "<div class='annoInfo'>" + annoList.resources.length + " annotations <a href='" + annoList["@id"] + "'>▷</a></div>";
         if(localStorage.getItem("showTextLines") == 'true') {
@@ -156,6 +156,21 @@ function makeCanvasHtml(canvas, canvasDiv, annoList){
         html += "<p>There is no otherContent</p>";
     }
     canvasDiv.append(html);
+}
+
+
+function getParticularSizeThumb(canvas, thumbSize){
+    if(canvas.thumbnail.service){
+        var sizes = canvas.thumbnail.service.sizes;
+        sizes.sort(function(a,b){ return a - b});
+        for(var i=sizes.length - 1; i>=0; i--){
+            if((sizes[i].width == thumbSize || sizes[i].height == thumbSize) && sizes[i].width <= thumbSize && sizes[i].height <= thumbSize){
+                return canvas.thumbnail.service['@id'] + "/full/" + sizes[i].width + "," + sizes[i].height + "/0/default.jpg";
+            }
+        }
+        return null;
+    }
+    return canvas.thumbnail["@id"];
 }
 
 function getTextLines(canvas, annoList) {

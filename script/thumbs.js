@@ -180,6 +180,7 @@ function load(manifest){
     } else {
         canvasList = manifest.sequences[0].canvases;
         makeThumbSizeSelector();
+        makeThumbSourceSelector();
         drawThumbs();
     }
     $('#typeaheadWait').hide();
@@ -249,6 +250,17 @@ function makeThumbSizeSelector(){
             localStorage.setItem('thumbSize', ts);
             drawThumbs();
         });
+    }
+}
+
+function makeThumbSourceSelector(){
+    // this is an additional feature to test new thumbnail functionality in the DLCS
+    // Only triggered if the first thumbnail is at /thumbs/
+    // If so, this will allow the app to replace "thumbs" with alternative path segments.
+    var canvas = canvasList[i];
+    localStorage.removeItem('thumbPathElement');
+    if(canvas.thumbnail && canvas.thumbnail.service && canvas.thumbnail.service.sizes){
+        var 
     }
 }
 

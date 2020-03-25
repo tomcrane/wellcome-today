@@ -112,3 +112,7 @@ footer {
 #annos .annoInfo { margin-left:110px; }
 #tocs .annoInfo { margin-left:110px; }
 #afterAll { clear:both; marging-top:5px;padding-bottom: 15px;}
+
+#thumbSourceSelector {
+    display: none;
+}

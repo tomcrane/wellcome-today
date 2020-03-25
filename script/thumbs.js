@@ -6,6 +6,9 @@ var authDo;
 var assumeFullMax = false;
 var viewer;
 var synth = window.speechSynthesis;
+var dlcsIoThumbs = "dlcs.io/thumbs/";
+var dlcsIoThumbsCheck = "dlcs.io/thumbschk/";
+var dlcsIoThumbsNoCheck = "dlcs.io/thumbsnochk/";
 
 var pop="";
 pop += "<div class=\"modal fade\" id=\"imgModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"mdlLabel\">";
@@ -180,6 +183,7 @@ function load(manifest){
     } else {
         canvasList = manifest.sequences[0].canvases;
         makeThumbSizeSelector();
+        makeThumbSourceSelector();
         drawThumbs();
     }
     $('#typeaheadWait').hide();
@@ -249,6 +253,48 @@ function makeThumbSizeSelector(){
             localStorage.setItem('thumbSize', ts);
             drawThumbs();
         });
+    }
+}
+
+function makeThumbSourceSelector(){
+    // this is an additional feature to test new thumbnail functionality in the DLCS
+    // Only triggered if the first thumbnail is at /thumbs/
+    // If so, this will allow the app to replace "thumbs" with alternative path segments.
+    var canvas = canvasList[0];
+    localStorage.removeItem('thumbPathElement');
+    if(canvas.thumbnail && 
+        canvas.thumbnail.service && 
+        canvas.thumbnail.service.sizes &&
+        canvas.thumbnail.service['@id'].indexOf(dlcsIoThumbs) > 0){
+
+        var html = "<select id='thumbSource'>";
+        html += "<option value='" + dlcsIoThumbs + "'>" + dlcsIoThumbs + "</option>";
+        html += "<option value='" + dlcsIoThumbsNoCheck + "'>" + dlcsIoThumbsNoCheck + "</option>";
+        html += "<option value='" + dlcsIoThumbsCheck + "'>" + dlcsIoThumbsCheck + "</option>";
+        html += "</select>";
+        $('#thumbSourceSelector').append(html);
+        $('#thumbSourceSelector').addClass("col-md-2");
+        $('#mainSearch').removeClass("col-md-10").addClass("col-md-8");
+        $('#thumbSourceSelector').show();
+        
+        var thumbSource = localStorage.getItem('thumbSource');
+        if(!thumbSource){
+            thumbSource = dlcsIoThumbs;
+            localStorage.setItem('thumbSource', thumbSource);
+        }
+        if(thumbSource != dlcsIoThumbs){
+            $("#thumbSource option[value='" + thumbSource + "']").prop('selected', true);
+        }
+        $('#thumbSource').change(function(){
+            var ts =  $("#thumbSource").val();
+            localStorage.setItem('thumbSource', ts);
+            drawThumbs();
+        });
+    } else {
+        $('#thumbSourceSelector').empty();
+        $('#thumbSourceSelector').removeClass("col-md-2");
+        $('#mainSearch').removeClass("col-md-8").addClass("col-md-10");
+        $('#thumbSourceSelector').hide();
     }
 }
 
@@ -358,7 +404,9 @@ function getMainImg(canvas){
     // so instead
     var bigThumb = getParticularSizeThumb(canvas, 1024);
     if(bigThumb || assumeFullMax){
-        return canvas.thumbnail.service['@id'] + "/full/max/0/default.jpg";
+        // we need to do this again because we want to use the max path
+        let modifiedId = modifyThumbSource(canvas.thumbnail.service['@id']);
+        return modifiedId + "/full/max/0/default.jpg";
     } else {
         return canvas.images[0].resource['@id'];
     }
@@ -395,11 +443,20 @@ function getThumb(canvas){
     return thumb;
 }
 
+function modifyThumbSource(imageId){
+    let thumbSource = localStorage.getItem('thumbSource');
+    if(thumbSource){
+        return imageId.replace(dlcsIoThumbs, thumbSource);
+    }
+    return imageId;
+}
+
 function getParticularSizeThumb(canvas, thumbSize){
     var sizes = canvas.thumbnail.service.sizes;
     for(var i=sizes.length - 1; i>=0; i--){
         if((sizes[i].width == thumbSize || sizes[i].height == thumbSize) && sizes[i].width <= thumbSize && sizes[i].height <= thumbSize){
-            return canvas.thumbnail.service['@id'] + "/full/" + sizes[i].width + "," + sizes[i].height + "/0/default.jpg";
+            let idBase = modifyThumbSource(canvas.thumbnail.service['@id']);
+            return idBase + "/full/" + sizes[i].width + "," + sizes[i].height + "/0/default.jpg";
         }
     }
     return null;

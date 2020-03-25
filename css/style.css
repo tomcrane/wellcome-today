@@ -59,7 +59,7 @@ footer {
     max-height: calc(100vh - 230px);
 }
 
-#thumbSize {
+#thumbSize , #thumbSource {
     margin-top:8px;
 }
 
@@ -83,7 +83,7 @@ footer {
 }
 
 @media only screen and (max-width : 480px) {
-    #thumbSizeSelector, footer {
+    #thumbSizeSelector, #thumbSourceSelector, footer {
         display:none;
     }
     .row.first {

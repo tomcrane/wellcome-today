@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Thumb tester</title>
+	<link href="../css/bootstrap.css" rel="stylesheet" />
+	<link href="../css/typeahead.css" rel="stylesheet" />
+	<link href="../css/style.css" rel="stylesheet" />
+</head>
+<body>
+	<div class="container body-content" id="mainContainer">
+
+		<div class="row first">
+			<div class="col-md-10" id="mainSearch">
+				<div class="input-group">
+					<input type="text" class="form-control typeahead" placeholder="Start typing a b number or phrase from title..." name="q"
+						id="schBox">
+					<span class="input-group-btn">
+                        <button class="btn btn-default" type="submit">                        
+                            <img src="../css/spin18.gif" id='typeaheadWait' />&nbsp;
+                        </button>
+                        <button class="btn btn-default" type="button" id='imfeelinglucky'>                        
+                            I'm feeling lucky
+                        </button>
+                    </span>
+				</div>
+			</div>
+            <div class="col-md-2" id="thumbSizeSelector"></div>
+            <div id="thumbSourceSelector"></div>
+		</div>
+	</div>
+
+	<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+	<script src="script/bootstrap.min.js"></script>
+	<script src="script/typeahead.jquery.js"></script>
+	<script src="script/thumbs.js"></script>
+	<script src="script/wellcome.js"></script>
+	<script src="../../openseadragon/openseadragon.min.js"></script>
+
+</body>
+</html>

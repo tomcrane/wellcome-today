@@ -6,10 +6,10 @@ var authDo;
 var assumeFullMax = false;
 var viewer;
 var synth = window.speechSynthesis;
-var localhostHttp = "http://localhost:8084/";
-var localhostHttp3 = "https://localhost:8084/";
-var wcOrgTest = "https://iiif-test.wellcomecollection.org/";
-var wcOrgProd = "https://iiif.wellcomecollection.org/";
+var localhostHttp = "http://localhost:8084";
+var localhostHttp3 = "https://localhost:8084";
+var wcOrgTest = "https://iiif-test.wellcomecollection.org";
+var wcOrgProd = "https://iiif.wellcomecollection.org";
 
 var pop="";
 pop += "<div class=\"modal fade\" id=\"imgModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"mdlLabel\">";

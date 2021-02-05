@@ -1,15 +1,10 @@
 
-var lastLoadedManifest;
 var canvasList;
 var bigImage;
 var authDo;
 var assumeFullMax = false;
 var viewer;
 var synth = window.speechSynthesis;
-var localhostHttp = "http://localhost:8084";
-var localhostHttp3 = "https://localhost:8084";
-var wcOrgTest = "https://iiif-test.wellcomecollection.org";
-var wcOrgProd = "https://iiif.wellcomecollection.org";
 
 var pop="";
 pop += "<div class=\"modal fade\" id=\"imgModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"mdlLabel\">";
@@ -74,6 +69,7 @@ function stopSpeaking(){
 }
 
 $(function() {
+    makeIIIFSourceSelector();
     $('#mainContainer').append(rv);
     processQueryString();    
     $('#manifestWait').hide();
@@ -162,16 +158,6 @@ function processQueryString(){
     }
 }
 
-function langMap(langMap){
-    // we can do language selection later; for now this extracts the "en" key and concatenates the strings
-    var strings = langMap["en"];
-    if(!strings) strings = langMap["none"];
-    if(strings){
-        return strings.join('\r\n');
-    }
-    return null;
-}
-
 
 function load(manifest){    
     var thumbs = $('#thumbs');
@@ -179,7 +165,7 @@ function load(manifest){
     $('#title').text(langMap(manifest.label));
     $('#annoDump').attr("href", "annodump.html?manifest=" + manifest.id);
     if(manifest.id.indexOf("wellcome") != -1 || manifest.id.indexOf("localhost") != -1){
-        var wcManifestationId = manifest["@id"].split("/")[4];
+        var wcManifestationId = manifest.id.split("/")[4];
         if(wcManifestationId){
             var uvPage = "http://universalviewer.io/examples/?manifest=" + manifest.id;
             $('#annoDump').after(" | <a href='" + manifest.id + "'>manifest</a> | <a href='" + uvPage + "'>UV</a> | <a href='" + manifest.homepage[0].id + "'>work page</a> ");
@@ -187,7 +173,6 @@ function load(manifest){
     }
     canvasList = manifest.items;
     makeThumbSizeSelector();
-    makeManifestSourceSelector();
     drawThumbs();
     $('#typeaheadWait').hide();
     $('#manifestWait').hide();
@@ -225,8 +210,8 @@ function makeThumbSizeSelector(){
     thumbSizes = [];
     for(var i=0; i<Math.min(canvasList.length, 10); i++){
         var canvas = canvasList[i];
-        if(canvas.thumbnail && canvas.thumbnail[0].service && canvas.thumbnail[0].service.sizes){
-            var sizes = canvas.thumbnail[0].service.sizes;
+        if(canvas.thumbnail && canvas.thumbnail[0].service && canvas.thumbnail[0].service[0].sizes){
+            var sizes = canvas.thumbnail[0].service[0].sizes;
             for(var j=0; j<sizes.length;j++){
                 var testSize = Math.max(sizes[j].width, sizes[j].height);
                 if(thumbSizes.indexOf(testSize) == -1 && testSize <= 600){
@@ -259,35 +244,7 @@ function makeThumbSizeSelector(){
     }
 }
 
-function makeIIIFSourceSelector(){
-    // Where are searches and "I'm feeling lucky" targeted?
-    var html = "<select id='manifestSource'>";
-    html += "<option value='" + wcOrgProd + "'>" + wcOrgProd + "</option>";
-    html += "<option value='" + wcOrgTest + "'>" + wcOrgTest + "</option>";
-    html += "<option value='" + localhostHttp3 + "'>" + localhostHttp3 + "</option>";
-    html += "<option value='" + localhostHttp + "'>" + localhostHttp + "</option>";
-    html += "</select>";
-    $('#iiifSourceSelector').append(html);
-    $('#iiifSourceSelector').addClass("col-md-2");
-    $('#mainSearch').removeClass("col-md-10").addClass("col-md-8");
-    $('#iiifSourceSelector').show();
-    
-    var iiifSource = localStorage.getItem('iiifSource');
-    if(!iiifSource){
-        iiifSource = wcOrgProd;
-        localStorage.setItem('iiifSource', iiifSource);
-    }
-    if(iiifSource != wcOrgProd){
-        $("#iiifSource option[value='" + iiifSource + "']").prop('selected', true);
-    }
-    $('#iiifSource').change(function(){
-        var newVal =  $("#iiifSource").val();
-        var currentSource = localStorage.getItem("iiifSource");
-        localStorage.setItem('iiifSource', newVal);
-        var newManifest = lastLoadedManifest.replace(currentSource, newVal);
-        location.href = location.pathname + "?manifest=" + newManifest;
-    });
-}
+
 
 function selectForModal(canvasId, $image) {
     if(synth) synth.cancel();
@@ -303,22 +260,22 @@ function selectForModal(canvasId, $image) {
         bigImage.attr('data-src', imgToLoad); // to preserve
         bigImage.attr('data-uri', getImageService(canvas));
         $('#mdlLabel').text(canvas.label);        
-        if(synth && canvas.otherContent){
-            $('.btn-read').attr('data-uri', canvas['@id']);
+        if(synth && canvas.annotations){
+            $('.btn-read').attr('data-uri', canvas.id);
         } else {
             $('.btn-read').hide();    
         }
         if(cvIdx > 0){
             $('#mdlPrev').prop('disabled', false);
             prevCanvas = canvasList[cvIdx - 1];
-            $('#mdlPrev').attr('data-uri', prevCanvas['@id']);
+            $('#mdlPrev').attr('data-uri', prevCanvas.id);
         } else {
             $('#mdlPrev').prop('disabled', true);
         }        
         if(cvIdx < canvasList.length - 1){
             $('#mdlNext').prop('disabled', false);
             nextCanvas = canvasList[cvIdx + 1];
-            $('#mdlNext').attr('data-uri', nextCanvas['@id']);
+            $('#mdlNext').attr('data-uri', nextCanvas.id);
         } else {
             $('#mdlNext').prop('disabled', true);
         }
@@ -337,16 +294,16 @@ function readAnnoLines(canvas, annoList, readBehaviour){
     linesToSpeak = [];
     textToSpeak = "";
     for(var i=0; i<annoList.items.length; i++){
-        var res = annoList.items[i];        
-        if(res.motivation == "supplementing" && res.body.type == "TextualBody"){
+        var anno = annoList.items[i];        
+        if(anno.motivation == "supplementing" && anno.body.type == "TextualBody"){
             if(readBehaviour == "all"){
                 textToSpeak += " ";
-                textToSpeak += res.body.value;
+                textToSpeak += anno.body.value;
             } else {
                 let line = {
-                    text: res.body.value,
-                    lineToSpeak: new SpeechSynthesisUtterance(res.body.value),
-                    region: /#xywh=(.*)/g.exec(res.target.id)[1]
+                    text: anno.body.value,
+                    lineToSpeak: new SpeechSynthesisUtterance(anno.body.value),
+                    region: /#xywh=(.*)/g.exec(anno.target.id)[1]
                 };                     
                 linesToSpeak.push(line);
                 line.lineToSpeak.onstart = function(){
@@ -396,15 +353,14 @@ function getMainImg(canvas){
     var bigThumb = getParticularSizeThumb(canvas, 1024);
     if(bigThumb || assumeFullMax){
         // we need to do this again because we want to use the max path
-        let modifiedId = modifyThumbSource(canvas.thumbnail[0].service.id);
-        return modifiedId + "/full/max/0/default.jpg";
+        return canvas.thumbnail[0].service[0]["@id"] + "/full/max/0/default.jpg";
     } else {
         return canvas.items[0].items[0].body.id;
     }
 }
 
 function getImageService(canvas){
-    var services = canvas.items[0].items[0].body.service;
+    var services = canvas.items[0].items[0].body.service[0];
     var imgService = services;
     for(var i=0; i<services.length; i++){
         // looks for image service 2
@@ -421,7 +377,7 @@ function getThumb(canvas){
         return null;
     }
     var thumb = canvas.thumbnail[0].id;
-    if(canvas.thumbnail[0].service && canvas.thumbnail[0].service.sizes){
+    if(canvas.thumbnail[0].service && canvas.thumbnail[0].service[0].sizes){
         // manifest gives thumb size hints
         // dumb version exact match and assumes ascending - TODO: https://gist.github.com/tomcrane/093c6281d74b3bc8f59d
         var particular = getParticularSizeThumb(canvas, localStorage.getItem('thumbSize'));
@@ -431,10 +387,11 @@ function getThumb(canvas){
 }
 
 function getParticularSizeThumb(canvas, thumbSize){
-    var sizes = canvas.thumbnail[0].service.sizes;
+    var sizes = canvas.thumbnail[0].service[0].sizes;
     for(var i=sizes.length - 1; i>=0; i--){
         if((sizes[i].width == thumbSize || sizes[i].height == thumbSize) && sizes[i].width <= thumbSize && sizes[i].height <= thumbSize){
-            return canvas.thumbnail[0].service.id + "/full/" + sizes[i].width + "," + sizes[i].height + "/0/default.jpg";
+            // this is still an ImageService2
+            return canvas.thumbnail[0].service[0]["@id"] + "/full/" + sizes[i].width + "," + sizes[i].height + "/0/default.jpg";
         }
     }
     return null;

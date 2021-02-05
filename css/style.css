@@ -59,7 +59,7 @@ footer {
     max-height: calc(100vh - 230px);
 }
 
-#thumbSize , #thumbSource {
+#thumbSize , #thumbSource, #manifestSource {
     margin-top:8px;
 }
 

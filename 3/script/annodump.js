@@ -5,6 +5,7 @@ var currentPage = 0;
 var currentManifest = "";
 
 $(function() {
+    makeIIIFSourceSelector();
     processQueryString();    
     $('#manifestWait').hide();   
 });
@@ -49,34 +50,20 @@ function processQueryString(){
         $('#manifestWait').show();
         $('#title').text('loading ' + qs[1] + '...');
         $.getJSON(qs[1], function (iiifResource) {
-            if(iiifResource['@type'] == "sc:Collection"){
-                currentManifest = iiifResource.manifests[0]['@id'];
-                $.getJSON(currentManifest, function (cManifest) {
-                    load(cManifest);
-                });
-            } else {
-                load(iiifResource);
-            }
+            load(iiifResource);
         });
     }
 }
 
 function load(manifest){   
-    $('#title').text(manifest.label);
-    $('#iiifManifestUri').attr("href", manifest["@id"]);
-    $('#thumbViewerUri').attr("href", "thumbs.html?manifest=" + manifest["@id"]);
-    if(manifest["@id"].indexOf("wellcomelibrary.org")!= -1){
-        var bnum = manifest["@id"].split("/")[4];
-        if(bnum){
-            $('#itemPageUri').attr("href", "http://wellcomelibrary.org/item/" + bnum);
-        }
+    $('#title').text(langMap(manifest.label));
+    $('#iiifManifestUri').attr("href", manifest.id);
+    $('#thumbViewerUri').attr("href", "thumbs.html?manifest=" + manifest.id);
+    if(manifest.homepage){
+        $('#itemPageUri').attr("href", manifest.homepage[0].id);
     }
-    if(manifest.mediaSequences){
-        alert("This is not a normal IIIF manifest - it's an 'IxIF' extension for audio, video, born digital. No anno support yet!");
-    } else {
-        canvasList = manifest.sequences[0].canvases;
-        renderPage();
-    }
+    canvasList = manifest.items;
+    renderPage();
     $('#typeaheadWait').hide();
     $('#manifestWait').hide();
 }
@@ -103,7 +90,6 @@ function renderPage(){
     if(!canvasList) return;
     for(var i=0; i<canvasList.length; i++){
         var page = Math.floor(i / pageSize);
-        console.log(page);
         if(page != runningPage){
             runningPage = page;
             var linkText = i + "-" + Math.min(i+pageSize-1, canvasList.length);
@@ -132,9 +118,9 @@ function appendCanvas(i, canvas){
     var annos = $('#annos');
     var canvasDiv = $("<div class='canvas'></div>");
     annos.append(canvasDiv);
-    if(canvas.otherContent){
-        $.getJSON(canvas.otherContent[0]["@id"], function(annoList){
-            makeCanvasHtml(canvas, canvasDiv, annoList);
+    if(canvas.annotations){
+        $.getJSON(canvas.annotations[0].id, function(annoPage){
+            makeCanvasHtml(canvas, canvasDiv, annoPage);
         });
     } else {
         makeCanvasHtml(canvas, canvasDiv);
@@ -142,15 +128,15 @@ function appendCanvas(i, canvas){
 
 }
 
-function makeCanvasHtml(canvas, canvasDiv, annoList){
-    var html = "<div class='imgContainer'><a href='" + canvas.images[0].resource["@id"] + "'><img src='" + getParticularSizeThumb(canvas, 100) + "' /></a><br/>" + canvas.label + "</div>";
-    if(annoList){
-        html += "<div class='annoInfo'>" + annoList.resources.length + " annotations <a href='" + annoList["@id"] + "'>▷</a></div>";
+function makeCanvasHtml(canvas, canvasDiv, annoPage){
+    var html = "<div class='imgContainer'><a href='" + canvas.items[0].items[0].body.id + "'><img src='" + getParticularSizeThumb(canvas, 100) + "' /></a><br/>" + langMap(canvas.label) + "</div>";
+    if(annoPage){
+        html += "<div class='annoInfo'>" + annoPage.items.length + " annotations <a href='" + annoPage.id + "'>▷</a></div>";
         if(localStorage.getItem("showTextLines") == 'true') {
-            html += getTextLines(canvas, annoList);
+            html += getTextLines(canvas, annoPage);
         }
         if(localStorage.getItem("showIllustrations") == 'true'){
-            html += getIllustrations(canvas, annoList);
+            html += getIllustrations(canvas, annoPage);
         }
     } else {
         html += "<p>There is no otherContent</p>";
@@ -160,35 +146,35 @@ function makeCanvasHtml(canvas, canvasDiv, annoList){
 
 
 function getParticularSizeThumb(canvas, thumbSize){
-    if(canvas.thumbnail.service){
-        var sizes = canvas.thumbnail.service.sizes;
+    if(canvas.thumbnail[0].service  ){
+        var sizes = canvas.thumbnail[0].service[0].sizes;
         sizes.sort(function(a,b){ return a - b});
         for(var i=sizes.length - 1; i>=0; i--){
             if((sizes[i].width == thumbSize || sizes[i].height == thumbSize) && sizes[i].width <= thumbSize && sizes[i].height <= thumbSize){
-                return canvas.thumbnail.service['@id'] + "/full/" + sizes[i].width + "," + sizes[i].height + "/0/default.jpg";
+                return canvas.thumbnail[0].service[0]["@id"] + "/full/" + sizes[i].width + "," + sizes[i].height + "/0/default.jpg";
             }
         }
         return null;
     }
-    return canvas.thumbnail["@id"];
+    return canvas.thumbnail[0].id;
 }
 
-function getTextLines(canvas, annoList) {
+function getTextLines(canvas, annoPage) {
     var html = "<div class='annoInfo textLines'>";
-    annoList.resources.forEach(function(res){
-        if(res.motivation == "sc:painting" && res.resource["@type"] == "cnt:ContentAsText"){
-            html += "<div><a target='_blank' href='" + getImageLink(canvas, res.on) + "'>" + res.resource.chars + "</a></div>";
+    annoPage.items.forEach(function(anno){
+        if(anno.motivation == "supplementing" && anno.body.type == "TextualBody"){
+            html += "<div><a target='_blank' href='" + getImageLink(canvas, anno.target.id) + "'>" + anno.body.value + "</a></div>";
         }
     });
     html += "</div>";
     return html;
 }
 
-function getIllustrations(canvas, annoList) {
+function getIllustrations(canvas, annoPage) {
     var html = "<div class='annoInfo illustrations'>";
-    annoList.resources.forEach(function(res){
-        if(res.motivation == "oa:classifying" && res.resource["@id"] == "dctypes:Image"){
-            html += "<div><p>" + res.resource.label + "</p><a target='_blank' href='" + getImageLink(canvas, res.on) + "'><img src='" + getImageLink(canvas, res.on, 0.15) + "' /></a></div>";
+    annoPage.items.forEach(function(anno){
+        if(anno.motivation == "classifying" && anno.body.id == "Image"){
+            html += "<div><p>" + langMap(anno.body.label) + "</p><a target='_blank' href='" + getImageLink(canvas, anno.target.id) + "'><img src='" + getImageLink(canvas, anno.target.id, 0.15) + "' /></a></div>";
         }
     });
     html += "</div>";
@@ -203,5 +189,5 @@ function getImageLink(canvas, target, scale){
         var w = Math.floor(region.split(",")[2] * scale);
         size = w + ",";
     }
-    return canvas.images[0].resource.service["@id"] + "/" + region + "/" + size + "/0/default.jpg";
+    return canvas.items[0].items[0].body.service[0]["@id"] + "/" + region + "/" + size + "/0/default.jpg";
 }

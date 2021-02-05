@@ -24,10 +24,10 @@ $(function() {
 });
 
 var gfmTimeout;
-var urlRoot = "https://wellcomelibrary.org";
 
 function loadSuggestion(suggestion){
-    window.location.href = window.location.pathname + "?manifest=" + urlRoot + "/iiif/" + suggestion.id + "/manifest";
+    var urlRoot = localStorage.get("iiifSource");
+    window.location.href = window.location.pathname + "?manifest=" + urlRoot + "/presentation/" + suggestion.id;
 }
 
 function getFlatManifestations(query, syncResults, asyncResults) {
@@ -36,14 +36,15 @@ function getFlatManifestations(query, syncResults, asyncResults) {
     }
     gfmTimeout = setTimeout(function () {
         console.log('autocomplete - ' + query);
-        $.ajax(urlRoot + "/service/bNumberSuggestion?q=" + query).done(function (results) {
+        // formerly bNumberSuggestion
+        $.ajax(urlRoot + "/service/manifestation-search?q=" + query).done(function (results) {
             asyncResults(results);
         });
     }, 300);
 }
 
 function ImFeelingLucky(){
-    $.ajax(urlRoot + "/service/bNumberSuggestion?q=imfeelinglucky").done(function (results) {
+    $.ajax(urlRoot + "/service/manifestation-search?q=imfeelinglucky").done(function (results) {
         loadSuggestion(results[0]);    
     });
 }

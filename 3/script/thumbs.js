@@ -1,14 +1,15 @@
 
-
+var lastLoadedManifest;
 var canvasList;
 var bigImage;
 var authDo;
 var assumeFullMax = false;
 var viewer;
 var synth = window.speechSynthesis;
-var dlcsIoThumbs = "dlcs.io/thumbs/";
-var dlcsIoThumbsCheck = "dlcs.io/thumbschk/";
-var dlcsIoThumbsNoCheck = "dlcs.io/thumbsnochk/";
+var localhostHttp = "http://localhost:8084/";
+var localhostHttp3 = "https://localhost:8084/";
+var wcOrgTest = "https://iiif-test.wellcomecollection.org/";
+var wcOrgProd = "https://iiif.wellcomecollection.org/";
 
 var pop="";
 pop += "<div class=\"modal fade\" id=\"imgModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"mdlLabel\">";
@@ -154,38 +155,40 @@ function processQueryString(){
     if(qs && qs[1]){        
         $('#manifestWait').show();
         $('#title').text('loading ' + qs[1] + '...');
-        $.getJSON(qs[1], function (iiifResource) {
-            if(iiifResource['@type'] == "sc:Collection"){
-                $.getJSON(iiifResource.manifests[0]['@id'], function (cManifest) {
-                    load(cManifest);
-                });
-            } else {
-                load(iiifResource);
-            }
+        lastLoadedManifest = qs[1];
+        $.getJSON(lastLoadedManifest, function (iiifManifest) {
+            load(iiifManifest);
         });
     }
+}
+
+function langMap(langMap){
+    // we can do language selection later; for now this extracts the "en" key and concatenates the strings
+    var strings = langMap["en"];
+    if(!strings) strings = langMap["none"];
+    if(strings){
+        return strings.join('\r\n');
+    }
+    return null;
 }
 
 
 function load(manifest){    
     var thumbs = $('#thumbs');
     thumbs.empty();
-    $('#title').text(manifest.label);
-    $('#annoDump').attr("href", "annodump.html?manifest=" + manifest["@id"]);
-    if(manifest["@id"].indexOf("wellcomelibrary.org")!= -1){
-        var bnum = manifest["@id"].split("/")[4];
-        if(bnum){
-            $('#annoDump').after(" | <a href='" + manifest["@id"] + "'>manifest</a> | <a href='http://universalviewer.io/examples/?manifest=" + manifest["@id"] + "'>UV</a> | <a href='https://wellcomelibrary.org/item/" + bnum + "'>item page</a> ");
+    $('#title').text(langMap(manifest.label));
+    $('#annoDump').attr("href", "annodump.html?manifest=" + manifest.id);
+    if(manifest.id.indexOf("wellcome") != -1 || manifest.id.indexOf("localhost") != -1){
+        var wcManifestationId = manifest["@id"].split("/")[4];
+        if(wcManifestationId){
+            var uvPage = "http://universalviewer.io/examples/?manifest=" + manifest.id;
+            $('#annoDump').after(" | <a href='" + manifest.id + "'>manifest</a> | <a href='" + uvPage + "'>UV</a> | <a href='" + manifest.homepage[0].id + "'>work page</a> ");
         }
     }
-    if(manifest.mediaSequences){
-        thumbs.append("<i>This is not a normal IIIF manifest - it's an 'IxIF' extension for audio, video, born digital. This viewer does not support them (yet).</i>");
-    } else {
-        canvasList = manifest.sequences[0].canvases;
-        makeThumbSizeSelector();
-        makeThumbSourceSelector();
-        drawThumbs();
-    }
+    canvasList = manifest.items;
+    makeThumbSizeSelector();
+    makeManifestSourceSelector();
+    drawThumbs();
     $('#typeaheadWait').hide();
     $('#manifestWait').hide();
 }
@@ -195,7 +198,7 @@ function drawThumbs(){
     thumbs.empty();
     for(var i=0; i<canvasList.length; i++){
         var canvas = canvasList[i];
-        var thumbHtml = '<div class="tc">' + (canvas.label || '') + '<br/>';
+        var thumbHtml = '<div class="tc">' + (langMap(canvas.label) || '') + '<br/>';
         var thumb = getThumb(canvas);
         if(!thumb){ 
             thumbHtml += '<div class="thumb-no-access">Image not available</div></div>';
@@ -207,7 +210,7 @@ function drawThumbs(){
                 wh = sizeParam[1].split(",");
                 dimensions = "width='" + wh[0] + "' height='" + wh[1] + "'";
             }
-            thumbHtml += '<img class="thumb" title="' + canvas.label + '" data-uri="' + canvas['@id'] + '" data-src="' + thumb + '" ' + dimensions + '/></div>';
+            thumbHtml += '<img class="thumb" title="' + langMap(canvas.label) + '" data-uri="' + canvas.id + '" data-src="' + thumb + '" ' + dimensions + '/></div>';
         }
         thumbs.append(thumbHtml);
     } 
@@ -222,8 +225,8 @@ function makeThumbSizeSelector(){
     thumbSizes = [];
     for(var i=0; i<Math.min(canvasList.length, 10); i++){
         var canvas = canvasList[i];
-        if(canvas.thumbnail && canvas.thumbnail.service && canvas.thumbnail.service.sizes){
-            var sizes = canvas.thumbnail.service.sizes;
+        if(canvas.thumbnail && canvas.thumbnail[0].service && canvas.thumbnail[0].service.sizes){
+            var sizes = canvas.thumbnail[0].service.sizes;
             for(var j=0; j<sizes.length;j++){
                 var testSize = Math.max(sizes[j].width, sizes[j].height);
                 if(thumbSizes.indexOf(testSize) == -1 && testSize <= 600){
@@ -256,46 +259,34 @@ function makeThumbSizeSelector(){
     }
 }
 
-function makeThumbSourceSelector(){
-    // this is an additional feature to test new thumbnail functionality in the DLCS
-    // Only triggered if the first thumbnail is at /thumbs/
-    // If so, this will allow the app to replace "thumbs" with alternative path segments.
-    var canvas = canvasList[0];
-    localStorage.removeItem('thumbPathElement');
-    if(canvas.thumbnail && 
-        canvas.thumbnail.service && 
-        canvas.thumbnail.service.sizes &&
-        canvas.thumbnail.service['@id'].indexOf(dlcsIoThumbs) > 0){
-
-        var html = "<select id='thumbSource'>";
-        html += "<option value='" + dlcsIoThumbs + "'>" + dlcsIoThumbs + "</option>";
-        html += "<option value='" + dlcsIoThumbsNoCheck + "'>" + dlcsIoThumbsNoCheck + "</option>";
-        html += "<option value='" + dlcsIoThumbsCheck + "'>" + dlcsIoThumbsCheck + "</option>";
-        html += "</select>";
-        $('#thumbSourceSelector').append(html);
-        $('#thumbSourceSelector').addClass("col-md-2");
-        $('#mainSearch').removeClass("col-md-10").addClass("col-md-8");
-        $('#thumbSourceSelector').show();
-        
-        var thumbSource = localStorage.getItem('thumbSource');
-        if(!thumbSource){
-            thumbSource = dlcsIoThumbs;
-            localStorage.setItem('thumbSource', thumbSource);
-        }
-        if(thumbSource != dlcsIoThumbs){
-            $("#thumbSource option[value='" + thumbSource + "']").prop('selected', true);
-        }
-        $('#thumbSource').change(function(){
-            var ts =  $("#thumbSource").val();
-            localStorage.setItem('thumbSource', ts);
-            drawThumbs();
-        });
-    } else {
-        $('#thumbSourceSelector').empty();
-        $('#thumbSourceSelector').removeClass("col-md-2");
-        $('#mainSearch').removeClass("col-md-8").addClass("col-md-10");
-        $('#thumbSourceSelector').hide();
+function makeIIIFSourceSelector(){
+    // Where are searches and "I'm feeling lucky" targeted?
+    var html = "<select id='manifestSource'>";
+    html += "<option value='" + wcOrgProd + "'>" + wcOrgProd + "</option>";
+    html += "<option value='" + wcOrgTest + "'>" + wcOrgTest + "</option>";
+    html += "<option value='" + localhostHttp3 + "'>" + localhostHttp3 + "</option>";
+    html += "<option value='" + localhostHttp + "'>" + localhostHttp + "</option>";
+    html += "</select>";
+    $('#iiifSourceSelector').append(html);
+    $('#iiifSourceSelector').addClass("col-md-2");
+    $('#mainSearch').removeClass("col-md-10").addClass("col-md-8");
+    $('#iiifSourceSelector').show();
+    
+    var iiifSource = localStorage.getItem('iiifSource');
+    if(!iiifSource){
+        iiifSource = wcOrgProd;
+        localStorage.setItem('iiifSource', iiifSource);
     }
+    if(iiifSource != wcOrgProd){
+        $("#iiifSource option[value='" + iiifSource + "']").prop('selected', true);
+    }
+    $('#iiifSource').change(function(){
+        var newVal =  $("#iiifSource").val();
+        var currentSource = localStorage.getItem("iiifSource");
+        localStorage.setItem('iiifSource', newVal);
+        var newManifest = lastLoadedManifest.replace(currentSource, newVal);
+        location.href = location.pathname + "?manifest=" + newManifest;
+    });
 }
 
 function selectForModal(canvasId, $image) {
@@ -337,7 +328,7 @@ function selectForModal(canvasId, $image) {
 function readCanvas(canvasId, readBehaviour){    
     var cvIdx = findCanvasIndex(canvasId);
     var canvas = canvasList[cvIdx];    
-    $.getJSON(canvas.otherContent[0]["@id"], function(annoList){
+    $.getJSON(canvas.annotations[0].id, function(annoList){
         readAnnoLines(canvas, annoList, readBehaviour);
     });
 }
@@ -345,17 +336,17 @@ function readCanvas(canvasId, readBehaviour){
 function readAnnoLines(canvas, annoList, readBehaviour){
     linesToSpeak = [];
     textToSpeak = "";
-    for(var i=0; i<annoList.resources.length; i++){
-        var res = annoList.resources[i];        
-        if(res.motivation == "sc:painting" && res.resource["@type"] == "cnt:ContentAsText"){
+    for(var i=0; i<annoList.items.length; i++){
+        var res = annoList.items[i];        
+        if(res.motivation == "supplementing" && res.body.type == "TextualBody"){
             if(readBehaviour == "all"){
                 textToSpeak += " ";
-                textToSpeak += res.resource.chars;
+                textToSpeak += res.body.value;
             } else {
                 let line = {
-                    text: res.resource.chars,
-                    lineToSpeak: new SpeechSynthesisUtterance(res.resource.chars),
-                    region: /#xywh=(.*)/g.exec(res.on)[1]
+                    text: res.body.value,
+                    lineToSpeak: new SpeechSynthesisUtterance(res.body.value),
+                    region: /#xywh=(.*)/g.exec(res.target.id)[1]
                 };                     
                 linesToSpeak.push(line);
                 line.lineToSpeak.onstart = function(){
@@ -389,7 +380,7 @@ function highlightSpokenLine(line, canvas){
 
 function findCanvasIndex(canvasId){
     for(idx = 0; idx < canvasList.length; idx++){
-        if(canvasId == canvasList[idx]['@id']){
+        if(canvasId == canvasList[idx].id){
             return idx;
         }
     }
@@ -405,22 +396,21 @@ function getMainImg(canvas){
     var bigThumb = getParticularSizeThumb(canvas, 1024);
     if(bigThumb || assumeFullMax){
         // we need to do this again because we want to use the max path
-        let modifiedId = modifyThumbSource(canvas.thumbnail.service['@id']);
+        let modifiedId = modifyThumbSource(canvas.thumbnail[0].service.id);
         return modifiedId + "/full/max/0/default.jpg";
     } else {
-        return canvas.images[0].resource['@id'];
+        return canvas.items[0].items[0].body.id;
     }
 }
 
 function getImageService(canvas){
-    var services = canvas.images[0].resource.service;
+    var services = canvas.items[0].items[0].body.service;
     var imgService = services;
-    if(Array.isArray(services)){
-        for(var i=0; i<services.length; i++){
-            if(typeof services[i] === "object" && services[i].profile && services[i].profile.indexOf('http://iiif.io/api/image') != -1){
-                imgService = services[i];
-                break;
-            }
+    for(var i=0; i<services.length; i++){
+        // looks for image service 2
+        if(typeof services[i] === "object" && services[i].profile && services[i].profile.indexOf('http://iiif.io/api/image') != -1){
+            imgService = services[i];
+            break;
         }
     }
     return imgService['@id'];
@@ -430,11 +420,8 @@ function getThumb(canvas){
     if(!canvas.thumbnail){
         return null;
     }
-    if(typeof canvas.thumbnail === "string"){
-        return canvas.thumbnail;
-    }
-    var thumb = canvas.thumbnail['@id'];
-    if(canvas.thumbnail.service && canvas.thumbnail.service.sizes){
+    var thumb = canvas.thumbnail[0].id;
+    if(canvas.thumbnail[0].service && canvas.thumbnail[0].service.sizes){
         // manifest gives thumb size hints
         // dumb version exact match and assumes ascending - TODO: https://gist.github.com/tomcrane/093c6281d74b3bc8f59d
         var particular = getParticularSizeThumb(canvas, localStorage.getItem('thumbSize'));
@@ -443,20 +430,11 @@ function getThumb(canvas){
     return thumb;
 }
 
-function modifyThumbSource(imageId){
-    let thumbSource = localStorage.getItem('thumbSource');
-    if(thumbSource){
-        return imageId.replace(dlcsIoThumbs, thumbSource);
-    }
-    return imageId;
-}
-
 function getParticularSizeThumb(canvas, thumbSize){
-    var sizes = canvas.thumbnail.service.sizes;
+    var sizes = canvas.thumbnail[0].service.sizes;
     for(var i=sizes.length - 1; i>=0; i--){
         if((sizes[i].width == thumbSize || sizes[i].height == thumbSize) && sizes[i].width <= thumbSize && sizes[i].height <= thumbSize){
-            let idBase = modifyThumbSource(canvas.thumbnail.service['@id']);
-            return idBase + "/full/" + sizes[i].width + "," + sizes[i].height + "/0/default.jpg";
+            return canvas.thumbnail[0].service.id + "/full/" + sizes[i].width + "," + sizes[i].height + "/0/default.jpg";
         }
     }
     return null;

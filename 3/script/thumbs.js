@@ -259,7 +259,7 @@ function selectForModal(canvasId, $image) {
         bigImage.attr('src', imgToLoad); // may fail if auth
         bigImage.attr('data-src', imgToLoad); // to preserve
         bigImage.attr('data-uri', getImageService(canvas));
-        $('#mdlLabel').text(canvas.label);        
+        $('#mdlLabel').text(langMap(canvas.label));        
         if(synth && canvas.annotations){
             $('.btn-read').attr('data-uri', canvas.id);
         } else {

@@ -99,7 +99,7 @@ footer {
     cursor:pointer;
 }
 
-#lineHighlight {
+.lineHighlight {
     width:200px;
     height: 100px;    
     background:rgba(0, 220, 210, 0.3);
@@ -115,4 +115,13 @@ footer {
 
 #thumbSourceSelector {
     display: none;
+}
+
+.searchHit {
+    margin-top:1em;
+}
+
+#searchSummary {
+    margin: 1em 0;
+    font-size: larger;
 }

@@ -1,12 +1,11 @@
+let canvasList;
+let bigImage;
+let authDo;
+let assumeFullMax = false;
+let viewer;
+let synth = window.speechSynthesis;
 
-var canvasList;
-var bigImage;
-var authDo;
-var assumeFullMax = false;
-var viewer;
-var synth = window.speechSynthesis;
-
-var pop="";
+let pop = "";
 pop += "<div class=\"modal fade\" id=\"imgModal\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"mdlLabel\">";
 pop += "    <div class=\"modal-dialog modal-lg\" role=\"document\">";
 pop += "        <div class=\"modal-content\">";
@@ -39,13 +38,13 @@ pop += "<\/div>";
 
 document.write(pop);
 
-var rv="";
+let rv= "";
 rv += "<div class=\"row viewer\">";
 rv += "    <div class=\"col-md-12 iiif\">";
 rv += "        <h3 id=\"title\"><\/h3>";
 rv += "        <a href=\"\" id=\"annoDump\">view text and images<\/a>";
 rv += "        <div id=\"thumbs\">";
-rv += "            <img src=\"..\/css\/spin24.gif\" id='manifestWait' \/>";
+rv += "            <img src=\"..\/..\/..\/css\/spin24.gif\" id='manifestWait' \/>";
 rv += "        <\/div>";
 rv += "    <\/div>";
 rv += "<\/div>";
@@ -55,23 +54,10 @@ rv += "    <hr \/>";
 rv += "    <p>Thumbnail viewer<\/p>";
 rv += "<\/footer>";
 
-function setGlyph($btn, glyph, text){
-    $btn.html("<span class=\"glyphicon glyphicon-" + glyph + "\" aria-hidden=\"true\"></span> " + text);
-}
-
-function stopSpeaking(){
-    if(synth){
-        synth.cancel();
-        $(".btn-read").each(function(){ 
-            setGlyph($(this), "volume-up", $(this).attr('data-cta')); 
-        });
-    }
-}
-
 $(function() {
     makeIIIFSourceSelector();
     $('#mainContainer').append(rv);
-    processQueryString();    
+    processQueryString();
     $('#manifestWait').hide();
     $('#authOps').hide();
     $('.modal-footer').show();
@@ -80,8 +66,8 @@ $(function() {
         canvasId = $(this).attr('data-uri');
         selectForModal(canvasId, $("img.thumb[data-uri='" + canvasId + "']"));
     });
-    $(".btn-read").each(function(){ 
-        setGlyph($(this), "volume-up", $(this).attr('data-cta')); 
+    $(".btn-read").each(function(){
+        setGlyph($(this), "volume-up", $(this).attr('data-cta'));
     });
     $('.btn-read').click(function(){
         $("#lineHighlight").hide();
@@ -89,8 +75,8 @@ $(function() {
             stopSpeaking();
         } else {
             canvasId = $(this).attr('data-uri');
-            $(".btn-read").each(function(){ 
-                setGlyph($(this), "volume-off", $(this).attr('data-ctia')); 
+            $(".btn-read").each(function(){
+                setGlyph($(this), "volume-off", $(this).attr('data-ctia'));
             });
             readCanvas(canvasId, $(this).attr('data-read'));
         }
@@ -109,80 +95,16 @@ $(function() {
     authDo.bind('click', doClickthroughViaWindow);
 });
 
-function launchOsd(info){
-    // fetch the info.json ourselves so we can ignore HTTP errors from
-    // clickthrough auth. This is a cheat for clickthrough.
-    var $osdElement = $("#viewer");
-    if(viewer){
-        viewer.destroy();
-        viewer = null;
-    }
-    viewer = OpenSeadragon({
-        element: $osdElement[0],
-        prefixUrl: "../openseadragon/images/"
-    });
-    viewer.addHandler("full-screen", function(ev){
-        if (!ev.fullScreen) {
-            $osdElement.hide();
-            bigImage.show();
-        }
-    });
-
-    $osdElement.show();
-    bigImage.hide();
-    viewer.setFullScreen(true);
-
-    doInfoAjax(info, loadTileSource);
-}
-
-function loadTileSource(jqXHR, textStatus) {
-    var infoJson = $.parseJSON(jqXHR.responseText);
-    // TODO - if we have an access token, fetch the 
-    // info.json ourselves (with Authorisation header) and pass to OSD
-    viewer.addTiledImage({
-        tileSource: infoJson
-    });
-}
-
-
-
-function processQueryString(){    
+function processQueryString(){
     var qs = /manifest=(.*)/g.exec(window.location.search);
-    if(qs && qs[1]){        
+    if(qs && qs[1]){
         $('#manifestWait').show();
         $('#title').text('loading ' + qs[1] + '...');
         lastLoadedManifest = qs[1];
-        $.getJSON(lastLoadedManifest, function (iiifManifest) {
-            load(iiifManifest);
+        $.getJSON(lastLoadedManifest, function (iiifResource) {
+            onLoadQueryStringResource(iiifResource);
         });
     }
-}
-
-
-function load(manifest){    
-    var thumbs = $('#thumbs');
-    thumbs.empty();
-    $('#title').text(langMap(manifest.label));
-    $('#annoDump').attr("href", "annodump.html?manifest=" + manifest.id);
-    if(manifest.id.indexOf("wellcome") != -1 || manifest.id.indexOf("localhost") != -1){
-        var wcManifestationId = manifest.id.split("/")[4];
-        if(wcManifestationId){
-            let manifestLink = "<a href='" + manifest.id + "'>manifest</a>";
-            let uvLink = "<a href='http://universalviewer.io/examples/?manifest=" + manifest.id + "'>UV</a>";
-            var itemPageLink = "<a href='" + manifest.homepage[0].id + "'>work page</a>";
-            $('#annoDump').after(" | " + manifestLink + " | " + uvLink + " | " + itemPageLink);
-            if(getSearchService(manifest))
-            {
-                var searchLink = "<a href='search.html?manifest=" + manifest.id + "'>search</a>";;
-                $('#annoDump').after(" | " + searchLink);
-            }
-        }
-    }
-    canvasList = manifest.items;
-    makeThumbSizeSelector();
-    drawThumbs();
-    $('#typeaheadWait').hide();
-    $('#manifestWait').hide();
 }
 
 function drawThumbs(){
@@ -191,7 +113,7 @@ function drawThumbs(){
     let thumbSize = localStorage.getItem('thumbSize');
     for(let i=0; i<canvasList.length; i++){
         thumbs.append(getThumbHtml(canvasList[i], thumbSize));
-    } 
+    }
     $('img.thumb').click(function(){
         selectForModal($(this).attr('data-uri'), $(this));
         $('#imgModal').modal();
@@ -199,18 +121,19 @@ function drawThumbs(){
     $("img.thumb").unveil(300);
 }
 
+
 function makeThumbSizeSelector(){
     thumbSizes = [];
     for(var i=0; i<Math.min(canvasList.length, 10); i++){
         var canvas = canvasList[i];
-        if(canvas.thumbnail && canvas.thumbnail[0].service && canvas.thumbnail[0].service[0].sizes){
-            var sizes = canvas.thumbnail[0].service[0].sizes;
+        var sizes = getThumbnailSizes(canvas);
+        if(sizes){
             for(var j=0; j<sizes.length;j++){
                 var testSize = Math.max(sizes[j].width, sizes[j].height);
                 if(thumbSizes.indexOf(testSize) == -1 && testSize <= 600){
                     thumbSizes.push(testSize);
                 }
-            }    
+            }
         }
     }
     thumbSizes.sort(function(a, b) { return a - b; });
@@ -237,8 +160,6 @@ function makeThumbSizeSelector(){
     }
 }
 
-
-
 function selectForModal(canvasId, $image) {
     if(synth) synth.cancel();
     $("#lineHighlight").hide();
@@ -252,67 +173,36 @@ function selectForModal(canvasId, $image) {
         bigImage.attr('src', imgToLoad); // may fail if auth
         bigImage.attr('data-src', imgToLoad); // to preserve
         bigImage.attr('data-uri', getImageService(canvas));
-        $('#mdlLabel').text(langMap(canvas.label));        
-        if(synth && canvas.annotations){
-            $('.btn-read').attr('data-uri', canvas.id);
+        $('#mdlLabel').text(canvas.label);
+        if(synth && canvas.otherContent){
+            $('.btn-read').attr('data-uri', canvas['@id']);
         } else {
-            $('.btn-read').hide();    
+            $('.btn-read').hide();
         }
         if(cvIdx > 0){
             $('#mdlPrev').prop('disabled', false);
             prevCanvas = canvasList[cvIdx - 1];
-            $('#mdlPrev').attr('data-uri', prevCanvas.id);
+            $('#mdlPrev').attr('data-uri', prevCanvas.id || prevCanvas['@id']);
         } else {
             $('#mdlPrev').prop('disabled', true);
-        }        
+        }
         if(cvIdx < canvasList.length - 1){
             $('#mdlNext').prop('disabled', false);
             nextCanvas = canvasList[cvIdx + 1];
-            $('#mdlNext').attr('data-uri', nextCanvas.id);
+            $('#mdlNext').attr('data-uri', nextCanvas.id || nextCanvas['@id']);
         } else {
             $('#mdlNext').prop('disabled', true);
         }
     }
 }
 
-function readCanvas(canvasId, readBehaviour){    
-    var cvIdx = findCanvasIndex(canvasId);
-    var canvas = canvasList[cvIdx];    
-    $.getJSON(canvas.annotations[0].id, function(annoList){
+function readCanvas(canvasId, readBehaviour){
+    let cvIdx = findCanvasIndex(canvasId);
+    let canvas = canvasList[cvIdx];
+    let annos = canvas.annotations || canvas.otherContent;
+    $.getJSON(annos[0].id || annos[0]["@id"], function(annoList){
         readAnnoLines(canvas, annoList, readBehaviour);
     });
-}
-
-function readAnnoLines(canvas, annoList, readBehaviour){
-    linesToSpeak = [];
-    textToSpeak = "";
-    for(var i=0; i<annoList.items.length; i++){
-        var anno = annoList.items[i];        
-        if(anno.motivation == "supplementing" && anno.body.type == "TextualBody"){
-            if(readBehaviour == "all"){
-                textToSpeak += " ";
-                textToSpeak += anno.body.value;
-            } else {
-                let line = {
-                    text: anno.body.value,
-                    lineToSpeak: new SpeechSynthesisUtterance(anno.body.value),
-                    region: /#xywh=(.*)/g.exec(anno.target.id)[1]
-                };                     
-                linesToSpeak.push(line);
-                line.lineToSpeak.onstart = function(){
-                    highlightSpokenLine(line, canvas);
-                }       
-            }
-        }
-    }
-    if(readBehaviour == "all"){
-        synth.speak(new SpeechSynthesisUtterance(textToSpeak));
-    } else {
-        for(var i=0; i< linesToSpeak.length; i++){
-            // enqueue:
-            synth.speak(linesToSpeak[i].lineToSpeak);
-        } 
-    }
 }
 
 function highlightSpokenLine(line, canvas){
@@ -328,41 +218,14 @@ function highlightSpokenLine(line, canvas){
     hl.show();
 }
 
+
 function findCanvasIndex(canvasId){
     for(idx = 0; idx < canvasList.length; idx++){
-        if(canvasId == canvasList[idx].id){
+        if(canvasId == canvasList[idx].id || canvasList[idx]['@id']){
             return idx;
         }
     }
     return -1;
-}
-
-function getMainImg(canvas){
-    // we still have some Wellcome images with 1000px thumbs, needs tidying
-    // this doesn't work because we don't know about 1024 in the manifest, that's always 1024
-    // return getParticularSizeThumb(canvas, 1024) || getParticularSizeThumb(canvas, 1000) || canvas.images[0].resource['@id'];
-
-    // so instead
-    var bigThumb = getParticularSizeThumb(canvas, 1024);
-    if(bigThumb || assumeFullMax){
-        // we need to do this again because we want to use the max path
-        return canvas.thumbnail[0].service[0]["@id"] + "/full/max/0/default.jpg";
-    } else {
-        return canvas.items[0].items[0].body.id;
-    }
-}
-
-function getImageService(canvas){
-    var services = canvas.items[0].items[0].body.service[0];
-    var imgService = services;
-    for(var i=0; i<services.length; i++){
-        // looks for image service 2
-        if(typeof services[i] === "object" && services[i].profile && services[i].profile.indexOf('http://iiif.io/api/image') != -1){
-            imgService = services[i];
-            break;
-        }
-    }
-    return imgService['@id'];
 }
 
 
@@ -383,10 +246,11 @@ function doInfoAjax(uri, callback, token) {
     $.ajax(opts);
 }
 
-function reloadImage(){    
+function reloadImage(){
     bigImage.show();
     bigImage.attr('src', bigImage.attr('data-src') + "#" + new Date().getTime());
 }
+
 
 function on_info_complete(jqXHR, textStatus) {
 
@@ -427,6 +291,8 @@ function on_info_complete(jqXHR, textStatus) {
     }
 }
 
+
+
 function doClickthroughViaWindow(ev) {
 
     var authSvc = $(this).attr('data-uri');
@@ -436,7 +302,7 @@ function doClickthroughViaWindow(ev) {
     var pollTimer = window.setInterval(function () {
         if (win.closed) {
             window.clearInterval(pollTimer);
-            if (tokenSvc) {                
+            if (tokenSvc) {
                 // on_authed(tokenSvc);
                 $('#authOps').hide();
                 $('.modal-footer').show();
@@ -487,4 +353,53 @@ function getServices(info) {
         }
     }
     return svcInfo;
+}
+
+
+function setGlyph($btn, glyph, text){
+    $btn.html("<span class=\"glyphicon glyphicon-" + glyph + "\" aria-hidden=\"true\"></span> " + text);
+}
+
+function stopSpeaking(){
+    if(synth){
+        synth.cancel();
+        $(".btn-read").each(function(){
+            setGlyph($(this), "volume-up", $(this).attr('data-cta'));
+        });
+    }
+}
+
+function launchOsd(info){
+    // fetch the info.json ourselves so we can ignore HTTP errors from
+    // clickthrough auth. This is a cheat for clickthrough.
+    var $osdElement = $("#viewer");
+    if(viewer){
+        viewer.destroy();
+        viewer = null;
+    }
+    viewer = OpenSeadragon({
+        element: $osdElement[0],
+        prefixUrl: "../../openseadragon/images/"
+    });
+    viewer.addHandler("full-screen", function(ev){
+        if (!ev.fullScreen) {
+            $osdElement.hide();
+            bigImage.show();
+        }
+    });
+
+    $osdElement.show();
+    bigImage.hide();
+    viewer.setFullScreen(true);
+
+    doInfoAjax(info, loadTileSource);
+}
+
+function loadTileSource(jqXHR, textStatus) {
+    var infoJson = $.parseJSON(jqXHR.responseText);
+    // TODO - if we have an access token, fetch the
+    // info.json ourselves (with Authorisation header) and pass to OSD
+    viewer.addTiledImage({
+        tileSource: infoJson
+    });
 }

@@ -1,32 +1,9 @@
-var lastLoadedManifest;
+
 var localhostHttp = "http://localhost:8084";
 var localhostHttp3 = "https://localhost:8084";
 var wcOrgTest = "https://iiif-test.wellcomecollection.org";
 var wcOrgProd = "https://iiif.wellcomecollection.org";
 
-$(function() {
-    $('#imfeelinglucky').on('click', ImFeelingLucky);
-    $('#schBox').typeahead({
-        minLength: 4,
-        highlight: true
-    },
-    {
-        name: 'flat-manifs',
-        source: getFlatManifestations,
-        async: true,
-        limit: 50,
-        display: formatFlatManifestation
-    });
-    $('#schBox').bind('typeahead:select', function(ev, suggestion) {
-        loadSuggestion(suggestion);
-    });
-    $('#schBox').bind('typeahead:asyncrequest', function(ev) {
-        $('#typeaheadWait').show();
-    });
-    $('#schBox').bind('typeahead:render', function(ev) {
-        $('#typeaheadWait').hide();
-    });
-});
 
 var gfmTimeout;
 

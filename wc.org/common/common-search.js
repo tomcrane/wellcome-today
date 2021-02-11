@@ -50,7 +50,7 @@ function processQueryString(){
         $("#autoCompleteBox").val(currentQuery);
     }
     if(manifestArg){
-        var currentManifestUri = manifest;
+        var currentManifestUri = manifestArg;
         $('#manifestWait').show();
         $('#title').text('loading ' + currentManifestUri + '...');
         $.getJSON(currentManifestUri, function (iiifResource) {

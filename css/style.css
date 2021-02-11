@@ -120,6 +120,14 @@ footer {
 .searchHit {
     margin-top:1em;
 }
+.searchHit p {
+    width: 60%;
+}
+
+.searchHit .match {
+    font-weight: bold;
+    background-color: palegoldenrod;
+}
 
 #searchSummary {
     margin: 1em 0;

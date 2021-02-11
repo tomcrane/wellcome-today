@@ -1,4 +1,3 @@
-let canvasList;
 let bigImage;
 let authDo;
 let assumeFullMax = false;
@@ -55,7 +54,7 @@ rv += "    <p>Thumbnail viewer<\/p>";
 rv += "<\/footer>";
 
 $(function() {
-    makeIIIFSourceSelector();
+    if("makeIIIFSourceSelector" in window) makeIIIFSourceSelector();
     $('#mainContainer').append(rv);
     processQueryString();
     $('#manifestWait').hide();
@@ -221,7 +220,7 @@ function highlightSpokenLine(line, canvas){
 
 function findCanvasIndex(canvasId){
     for(idx = 0; idx < canvasList.length; idx++){
-        if(canvasId == canvasList[idx].id || canvasList[idx]['@id']){
+        if(canvasId == (canvasList[idx].id || canvasList[idx]['@id'])){
             return idx;
         }
     }

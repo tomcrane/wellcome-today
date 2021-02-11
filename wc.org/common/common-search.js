@@ -1,12 +1,10 @@
-
-var canvasList;
-var canvasMap;
-var currentManifest = null;
-var currentQuery = "";
+let canvasMap;
+let currentManifest = null;
+let currentQuery = "";
 
 $(function() {
-    processQueryString();    
-    $('#manifestWait').hide();   
+    processQueryString();
+    $('#manifestWait').hide();
 
     $("#iiifSearchForm").submit(function( event ) {
         event.preventDefault();
@@ -14,54 +12,58 @@ $(function() {
     });
 });
 
-function processQueryString(){    
-    var manifestArg = /manifest=([^\&]*)/g.exec(window.location.search);
-    var qArg = /q=([^\&]*)/g.exec(window.location.search);
-    if(qArg && qArg[1]){
-        currentQuery = decodeURI(qArg[1]);
-        $("#autoCompleteBox").val(currentQuery);
-    }
-    if(manifestArg && manifestArg[1]){     
-        var currentManifestUri = manifestArg[1];   
-        $('#manifestWait').show();
-        $('#title').text('loading ' + currentManifestUri + '...');
-        $.getJSON(currentManifestUri, function (iiifResource) {
-            if(iiifResource['@type'] == "sc:Collection"){
-                currentManifestUri = iiifResource.manifests[0]['@id'];
-                $.getJSON(currentManifestUri, function (cManifest) {
-                    load(cManifest);
-                });
-            } else {
-                load(iiifResource);
-            }
-        });
-    }
-}
-
-function load(manifest){   
+function load(manifest){
     currentManifest = manifest;
-    $('#title').text(manifest.label);
-    $('#iiifManifestUri').attr("href", manifest["@id"]);
-    $('#thumbViewerUri').attr("href", "thumbs.html?manifest=" + manifest["@id"]);
-    $('#annoPageUri').attr("href", "annodump.html?manifest=" + manifest["@id"]);
-    if(manifest["@id"].indexOf("wellcomelibrary.org")!= -1){
-        var bnum = manifest["@id"].split("/")[4];
-        if(bnum){
-            $('#itemPageUri').attr("href", "http://wellcomelibrary.org/item/" + bnum);
+    let manifestId;
+    if(manifest.id){
+        manifestId = manifest.id;
+        $('#title').text(langMap(manifest.label));
+    } else {
+        manifestId = manifest["@id"];
+        $('#title').text(manifest.label);
+    }
+    $('#iiifManifestUri').attr("href", manifestId);
+    $('#thumbViewerUri').attr("href", "thumbs.html?manifest=" + manifestId);
+    $('#annoPageUri').attr("href", "annodump.html?manifest=" + manifestId);
+    if(manifestId.indexOf("wellcome")!= -1){
+        if(manifest.homepage){
+            $('#itemPageUri').attr("href", manifest.homepage[0].id);
+        } else if(manifest.related) {
+            $('#itemPageUri').attr("href", manifest.related["@id"]);
         }
     }
     if(manifest.mediaSequences){
         alert("This is not a normal IIIF manifest - it's an 'IxIF' extension for audio, video, born digital. No search support yet!");
     } else {
-        canvasList = manifest.sequences[0].canvases;
+        canvasList = (manifest.items || manifest.sequences[0].canvases);
         doSearch();
     }
     $('#typeaheadWait').hide();
     $('#manifestWait').hide();
 }
 
+function processQueryString(){
+    var manifestArg = /manifest=([^\&]*)/g.exec(window.location.search);
+    var qArg = /q=([^\&]*)/g.exec(window.location.search);
+    if(qArg && qArg[1]){
+        currentQuery = decodeURI(qArg[1]);
+        $("#autoCompleteBox").val(currentQuery);
+    }
+    if(manifestArg && manifestArg[1]){
+        var currentManifestUri = manifestArg[1];
+        $('#manifestWait').show();
+        $('#title').text('loading ' + currentManifestUri + '...');
+        $.getJSON(currentManifestUri, function (iiifResource) {
+            onLoadQueryStringResource(iiifResource);
+        });
+    }
+}
 
-function doSearch(){ 
+function pathName(fqId){
+    return new URL(fqId).pathname;
+}
+
+function doSearch(){
     $('#searchResultsBlock').empty();
     $("#searchSummary").empty();
     let searchService = getSearchService(currentManifest);
@@ -69,11 +71,11 @@ function doSearch(){
     {
         $('#searchResultsBlock').append("<p>This manifest does not have a search service.</p>");
         return;
-    }      
+    }
     let queryUrl = searchService["@id"] + "?q=" + currentQuery;
     $.getJSON(queryUrl, function (searchResults) {
         $("#searchSummary").html("Search results for <strong><em>" + currentQuery + "</em></strong>:");
-        canvasMap = new Map(canvasList.map(c => [c["@id"], c]));
+        canvasMap = new Map(canvasList.map(c => [pathName(c.id || c["@id"]), c]));
         let annoMap = new Map(searchResults.resources.map(r => [r["@id"], r]));
         for(let i=0; i<searchResults.hits.length; i++){
             let hit = searchResults.hits[i];
@@ -86,7 +88,7 @@ function doSearch(){
                     index: j,
                     text: anno.chars,
                     region: /#xywh=(.*)/g.exec(anno.on)[1],
-                    canvas: canvasMap.get(anno.on.split("#")[0])
+                    canvas: canvasMap.get(pathName(anno.on.split("#")[0]))
                 })
             }
             renderHit(hit);
@@ -100,10 +102,10 @@ function renderHit(hit){
     h += "<div class='searchHit' id='h_" + hit.index + "'>";
     for(let t=0; t<hit.targets.length; t++){
         let target = hit.targets[t];
-        h += getThumbHtml(target.canvas, localStorage.getItem("thumbSize", 200), "im_" + target.id);    
+        h += getThumbHtml(target.canvas, localStorage.getItem("thumbSize", 200), "im_" + target.id);
         h += "<div class='lineHighlight' id='hl_" + target.id + "'></div>";
     }
-    h += "  <p>Match: <strong>" + hit.match + "</strong></p>";
+    h += "  <p>" + (hit.before || "Match: ") + "<span class='match'>" + hit.match + "</span> " + (hit.after || "") + "</p>";
     h += "</div>";
     $('#searchResultsBlock').append(h);
     for(let t=0; t<hit.targets.length; t++){
@@ -122,16 +124,16 @@ function renderHit(hit){
 
 $(function() {
     $('#autoCompleteBox').typeahead({
-        minLength: 3,
-        highlight: true
-    },
-    {
-        name: 'iiif-autocomplete',
-        source: getAutocomplete,
-        async: true,
-        limit: 50,
-        display: formatAutocomplete
-    });
+            minLength: 3,
+            highlight: true
+        },
+        {
+            name: 'iiif-autocomplete',
+            source: getAutocomplete,
+            async: true,
+            limit: 50,
+            display: formatAutocomplete
+        });
     $('#autoCompleteBox').bind('typeahead:select', function(ev, suggestion) {
         loadNewSearch(suggestion);
     });
@@ -143,11 +145,12 @@ $(function() {
     });
 });
 
-var schTimeout;
+let schTimeout;
 
 function loadNewSearch(autoCompleteResult){
     if(currentManifest){
-        window.location.href = window.location.pathname + "?manifest=" + currentManifest["@id"] + "&q=" + autoCompleteResult.match;
+        let id = currentManifest["@id"] || currentManifest.id;
+        window.location.href = window.location.pathname + "?manifest=" + id + "&q=" + autoCompleteResult.match;
     }
 }
 

@@ -2,31 +2,21 @@ $(function() {
     // no extras
 });
 
-function onLoadQueryStringResource(iiifResource){
-    if(iiifResource['@type'] == "sc:Collection"){
-        $.getJSON(iiifResource.manifests[0]['@id'], function (cManifest) {
-            load(cManifest);
-        });
-    } else {
-        load(iiifResource);
-    }
-}
-
 function load(manifest){
-    var thumbs = $('#thumbs');
+    let thumbs = $('#thumbs');
     thumbs.empty();
     $('#title').text(manifest.label);
     $('#annoDump').attr("href", "annodump.html?manifest=" + manifest["@id"]);
     if(manifest["@id"].indexOf("wellcomelibrary.org")!= -1){
-        var bnum = manifest["@id"].split("/")[4];
+        let bnum = manifest["@id"].split("/")[4];
         if(bnum){
-            var manifestLink = "<a href='" + manifest["@id"] + "'>manifest</a>";
-            var uvLink = "<a href='http://universalviewer.io/examples/?manifest=" + manifest["@id"] + "'>UV</a>";
-            var itemPageLink = "<a href='" + manifest.related["@id"] + "'>item page</a>";
+            let manifestLink = "<a href='" + manifest["@id"] + "'>manifest</a>";
+            let uvLink = "<a href='http://universalviewer.io/examples/?manifest=" + manifest["@id"] + "'>UV</a>";
+            let itemPageLink = "<a href='" + manifest.related["@id"] + "'>item page</a>";
             $('#annoDump').after(" | " + manifestLink + " | " + uvLink + " | " + itemPageLink);
             if(getSearchService(manifest))
             {
-                var searchLink = "<a href='search.html?manifest=" + manifest["@id"] + "'>search</a>";;
+                let searchLink = "<a href='search.html?manifest=" + manifest["@id"] + "'>search</a>";;
                 $('#annoDump').after(" | " + searchLink);
             }
         }
@@ -51,10 +41,10 @@ function getThumbnailSizes(canvas){
 }
 
 function readAnnoLines(canvas, annoList, readBehaviour){
-    linesToSpeak = [];
-    textToSpeak = "";
-    for(var i=0; i<annoList.resources.length; i++){
-        var res = annoList.resources[i];        
+    let linesToSpeak = [];
+    let textToSpeak = "";
+    for(let i=0; i<annoList.resources.length; i++){
+        let res = annoList.resources[i];
         if(res.motivation == "sc:painting" && res.resource["@type"] == "cnt:ContentAsText"){
             if(readBehaviour == "all"){
                 textToSpeak += " ";
@@ -75,7 +65,7 @@ function readAnnoLines(canvas, annoList, readBehaviour){
     if(readBehaviour == "all"){
         synth.speak(new SpeechSynthesisUtterance(textToSpeak));
     } else {
-        for(var i=0; i< linesToSpeak.length; i++){
+        for(let i=0; i< linesToSpeak.length; i++){
             // enqueue:
             synth.speak(linesToSpeak[i].lineToSpeak);
         } 
@@ -84,7 +74,7 @@ function readAnnoLines(canvas, annoList, readBehaviour){
 
 
 function getMainImg(canvas){
-    var bigThumb = getParticularSizeThumb(canvas, 1024);
+    let bigThumb = getParticularSizeThumb(canvas, 1024);
     if(bigThumb || assumeFullMax){
         // we need to do this again because we want to use the max path
         let modifiedId = modifyThumbSource(canvas.thumbnail.service['@id']);
@@ -95,10 +85,10 @@ function getMainImg(canvas){
 }
 
 function getImageService(canvas){
-    var services = canvas.images[0].resource.service;
-    var imgService = services;
+    let services = canvas.images[0].resource.service;
+    let imgService = services;
     if(Array.isArray(services)){
-        for(var i=0; i<services.length; i++){
+        for(let i=0; i<services.length; i++){
             if(typeof services[i] === "object" && services[i].profile && services[i].profile.indexOf('http://iiif.io/api/image') != -1){
                 imgService = services[i];
                 break;
@@ -113,14 +103,14 @@ function makeThumbSourceSelector(){
     // this is an additional feature to test new thumbnail functionality in the DLCS
     // Only triggered if the first thumbnail is at /thumbs/
     // If so, this will allow the app to replace "thumbs" with alternative path segments.
-    var canvas = canvasList[0];
+    let canvas = canvasList[0];
     localStorage.removeItem('thumbPathElement');
     if(canvas.thumbnail &&
         canvas.thumbnail.service &&
         canvas.thumbnail.service.sizes &&
         canvas.thumbnail.service['@id'].indexOf(dlcsIoThumbs) > 0){
 
-        var html = "<select id='thumbSource'>";
+        let html = "<select id='thumbSource'>";
         html += "<option value='" + dlcsIoThumbs + "'>" + dlcsIoThumbs + "</option>";
         html += "<option value='" + dlcsIoThumbsNoCheck + "'>" + dlcsIoThumbsNoCheck + "</option>";
         html += "<option value='" + dlcsIoThumbsCheck + "'>" + dlcsIoThumbsCheck + "</option>";
@@ -130,7 +120,7 @@ function makeThumbSourceSelector(){
         $('#mainSearch').removeClass("col-md-10").addClass("col-md-8");
         $('#thumbSourceSelector').show();
 
-        var thumbSource = localStorage.getItem('thumbSource');
+        let thumbSource = localStorage.getItem('thumbSource');
         if(!thumbSource){
             thumbSource = dlcsIoThumbs;
             localStorage.setItem('thumbSource', thumbSource);

@@ -20,11 +20,7 @@ function setChemistAndDruggistAction(checked){
 
 
 function processQueryString(){
-    var qs = /manifest=([^\&]*)/g.exec(window.location.search);
-    var page = /page=([^\&]*)/g.exec(window.location.search);
-    if(page && page[1]){
-        currentPage = page[1];
-    }
+    currentPage = getParam("page");
     setPersistentOptions();
     $("input[type='checkbox']").click(function () {
         var checked = $(this).is(":checked")
@@ -35,10 +31,11 @@ function processQueryString(){
             renderPage();
         }
     });
-    if(qs && qs[1]){
+    let manifestId = getParam("manifest");
+    if(manifestId){
         $('#manifestWait').show();
-        $('#title').text('loading ' + qs[1] + '...');
-        $.getJSON(qs[1], function (iiifResource) {
+        $('#title').text('loading ' + manifestId + '...');
+        $.getJSON(manifestId, function (iiifResource) {
             onLoadQueryStringResource(iiifResource)
         });
     }

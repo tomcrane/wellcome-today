@@ -94,3 +94,24 @@ $(function() {
     };
 
 })(window.jQuery);
+
+function getParam(term){
+    let rg = new RegExp(term + "=([^\\&]*)", "g");
+    let m = rg.exec(window.location.search);
+    if(m && m[1]){
+        return m[1];
+    }
+    return null;
+}
+
+function redirectTo2(htmlPage){
+    let manifest = getParam("manifest");
+    let page = getParam("page");
+    let q = getParam("q");
+
+    let redirect = "wc.org/2/" + htmlPage + "?manifest=" + manifest;
+    if(page) redirect += "&page=" + page;
+    if(q) redirect += "&q=" + q;
+
+    location.href = redirect;
+}

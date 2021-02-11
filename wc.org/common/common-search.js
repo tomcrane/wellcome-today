@@ -43,14 +43,14 @@ function load(manifest){
 }
 
 function processQueryString(){
-    var manifestArg = /manifest=([^\&]*)/g.exec(window.location.search);
-    var qArg = /q=([^\&]*)/g.exec(window.location.search);
-    if(qArg && qArg[1]){
+    let manifestArg = getParam("manifest");
+    let qArg = getParam("q");
+    if(qArg){
         currentQuery = decodeURI(qArg[1]);
         $("#autoCompleteBox").val(currentQuery);
     }
-    if(manifestArg && manifestArg[1]){
-        var currentManifestUri = manifestArg[1];
+    if(manifestArg){
+        var currentManifestUri = manifest;
         $('#manifestWait').show();
         $('#title').text('loading ' + currentManifestUri + '...');
         $.getJSON(currentManifestUri, function (iiifResource) {

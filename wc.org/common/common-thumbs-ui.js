@@ -95,11 +95,11 @@ $(function() {
 });
 
 function processQueryString(){
-    var qs = /manifest=(.*)/g.exec(window.location.search);
-    if(qs && qs[1]){
+    let manifestId = getParam("manifest");
+    if(manifestId){
         $('#manifestWait').show();
-        $('#title').text('loading ' + qs[1] + '...');
-        lastLoadedManifest = qs[1];
+        $('#title').text('loading ' + manifestId + '...');
+        lastLoadedManifest = manifestId;
         $.getJSON(lastLoadedManifest, function (iiifResource) {
             onLoadQueryStringResource(iiifResource);
         });

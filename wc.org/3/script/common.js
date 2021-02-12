@@ -37,8 +37,8 @@ function formatFlatManifestation(fm) {
 function makeIIIFSourceSelector(){
     // Where are searches and "I'm feeling lucky" targeted?
     var html = "<select id='manifestSource'>";
-    html += "<option value='" + wcOrgProd + "'>" + wcOrgProd + "</option>";
     html += "<option value='" + wcOrgTest + "'>" + wcOrgTest + "</option>";
+    html += "<option value='" + wcOrgProd + "'>" + wcOrgProd + "</option>";
     html += "<option value='" + localhostHttp3 + "'>" + localhostHttp3 + "</option>";
     html += "<option value='" + localhostHttp + "'>" + localhostHttp + "</option>";
     html += "</select>";

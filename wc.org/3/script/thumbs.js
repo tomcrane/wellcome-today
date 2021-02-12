@@ -80,8 +80,8 @@ function getMainImg(canvas){
 }
 
 function getImageService(canvas){
-    let services = canvas.items[0].items[0].body.service[0];
-    let imgService = services;
+    let services = canvas.items[0].items[0].body.service;
+    let imgService = services[0];
     for(let i=0; i<services.length; i++){
         // looks for image service 2
         if(typeof services[i] === "object" && services[i].profile && services[i].profile.indexOf('http://iiif.io/api/image') != -1){

@@ -46,7 +46,7 @@ function processQueryString(){
     let manifestArg = getParam("manifest");
     let qArg = getParam("q");
     if(qArg){
-        currentQuery = decodeURI(qArg[1]);
+        currentQuery = decodeURI(qArg);
         $("#autoCompleteBox").val(currentQuery);
     }
     if(manifestArg){
@@ -70,6 +70,9 @@ function doSearch(){
     if(!searchService)
     {
         $('#searchResultsBlock').append("<p>This manifest does not have a search service.</p>");
+        return;
+    }
+    if(!currentQuery){
         return;
     }
     let queryUrl = searchService["@id"] + "?q=" + currentQuery;

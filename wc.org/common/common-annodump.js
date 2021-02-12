@@ -21,6 +21,7 @@ function setChemistAndDruggistAction(checked){
 
 function processQueryString(){
     currentPage = getParam("page");
+    if(!currentPage) currentPage = 0;
     setPersistentOptions();
     $("input[type='checkbox']").click(function () {
         var checked = $(this).is(":checked")

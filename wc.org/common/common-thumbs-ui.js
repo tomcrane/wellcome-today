@@ -43,7 +43,7 @@ rv += "    <div class=\"col-md-12 iiif\">";
 rv += "        <h3 id=\"title\"><\/h3>";
 rv += "        <a href=\"\" id=\"annoDump\">view text and images<\/a>";
 rv += "        <div id=\"thumbs\">";
-rv += "            <img src=\"..\/..\/..\/css\/spin24.gif\" id='manifestWait' \/>";
+rv += "            <img src=\"..\/..\/css\/spin24.gif\" id='manifestWait' \/>";
 rv += "        <\/div>";
 rv += "    <\/div>";
 rv += "<\/div>";
@@ -172,9 +172,13 @@ function selectForModal(canvasId, $image) {
         bigImage.attr('src', imgToLoad); // may fail if auth
         bigImage.attr('data-src', imgToLoad); // to preserve
         bigImage.attr('data-uri', getImageService(canvas));
-        $('#mdlLabel').text(canvas.label);
-        if(synth && canvas.otherContent){
-            $('.btn-read').attr('data-uri', canvas['@id']);
+        let canvasLabel = canvas.label;
+        if("langMap" in window){
+            canvasLabel = langMap(canvas.label);
+        }
+        $('#mdlLabel').text(canvasLabel);
+        if(synth && (canvas.otherContent || canvas.annotations)){
+            $('.btn-read').attr('data-uri', (canvas.id || canvas['@id']));
         } else {
             $('.btn-read').hide();
         }
@@ -198,7 +202,7 @@ function selectForModal(canvasId, $image) {
 function readCanvas(canvasId, readBehaviour){
     let cvIdx = findCanvasIndex(canvasId);
     let canvas = canvasList[cvIdx];
-    let annos = canvas.annotations || canvas.otherContent;
+    let annos = (canvas.annotations || canvas.otherContent);
     $.getJSON(annos[0].id || annos[0]["@id"], function(annoList){
         readAnnoLines(canvas, annoList, readBehaviour);
     });

@@ -1,31 +1,86 @@
-function load(manifest){
+function load(iiifResource){
     let thumbs = $('#thumbs');
     thumbs.empty();
-    $('#title').text(langMap(manifest.label));
-    $('#annoDump').attr("href", "annodump.html?manifest=" + manifest.id);
-    if(manifest.id.indexOf("wellcome") != -1 || manifest.id.indexOf("localhost") != -1){
-        let wcManifestationId = manifest.id.split("/")[4];
-        if(wcManifestationId){
-            let manifestLink = "<a href='" + manifest.id + "'>manifest</a>";
-            let uvLink = "<a href='http://universalviewer.io/examples/?manifest=" + manifest.id + "'>UV</a>";
-            let itemPageLink = "<a href='" + manifest.homepage[0].id + "'>work page</a>";
-            $('#annoDump').after(" | " + manifestLink + " | " + uvLink + " | " + itemPageLink);
-            if(getSearchService(manifest))
-            {
-                let searchLink = "<a href='search.html?manifest=" + manifest.id + "'>search</a>";;
-                $('#annoDump').after(" | " + searchLink);
+    $('#title').text(langMap(iiifResource.label));
+
+    if(iiifResource.type == "Collection"){
+        $('#annoDump').after("<b>This is a IIIF Collection</b> - it contains " + iiifResource.items.length + " manifests. | <a href='" + iiifResource.id + "'>View Collection IIIF JSON</a>");
+        $('#annoDump').hide();
+        for(manifest of iiifResource.items){
+            let manifestLink = "thumbs.html?manifest=" + manifest.id;
+            let html = "<div class='manifest-in-coll'>";
+            html += "<a href='" + manifestLink + "'><img src='" + manifest.thumbnail[0].id + "' /></a></h4>"
+            html += "<h4><a href='" + manifestLink + "'>" + langMap(manifest.label, "<br/>") + "</a></h4>"
+            html += "</div>";
+            thumbs.append(html);
+        }
+
+    } else {
+        let manifest = iiifResource;
+        $('#annoDump').attr("href", "annodump.html?manifest=" + manifest.id);
+        if(manifest.id.indexOf("wellcome") != -1 || manifest.id.indexOf("localhost") != -1){
+            let wcManifestationId = manifest.id.split("/")[4];
+            if(wcManifestationId){
+                let manifestLink = "<a href='" + manifest.id + "'>manifest</a>";
+                let uvLink = "<a href='http://universalviewer.io/examples/?manifest=" + manifest.id + "'>UV</a>";
+                let itemPageLink = "<a href='" + manifest.homepage[0].id + "'>work page</a>";
+                $('#annoDump').after(" | " + manifestLink + " | " + uvLink + " | " + itemPageLink);
+                if(getSearchService(manifest))
+                {
+                    let searchLink = "<a href='search.html?manifest=" + manifest.id + "'>search</a>";
+                    $('#annoDump').after(" | " + searchLink);
+                }
+                if(manifest.partOf){
+                    for(let resource of manifest.partOf){
+                        if(resource.type == "Collection" && resource.behavior && resource.behavior[0] == "multi-part"){
+                            let collLink = "<a href='thumbs.html?manifest=" + resource.id + "'><b>&#8679; up to collection</b></a>";
+                            $('#annoDump').after(" | " + collLink);
+                        }
+                    }
+                }
             }
         }
+        canvasList = manifest.items;
+        if(canvasList[0].duration){
+            // AV
+            makeAVCanvases(manifest);
+        } else {
+            // images
+            makeThumbSizeSelector();
+            drawThumbs();
+        }
     }
-    canvasList = manifest.items;
-    makeThumbSizeSelector();
-    drawThumbs();
+
     $('#typeaheadWait').hide();
     $('#manifestWait').hide();
 }
 
 
-
+function makeAVCanvases(manifest){
+    for(canvas of canvasList){
+        let poster = "";
+        if(manifest.placeholderCanvas){
+            poster = manifest.placeholderCanvas.items[0].items[0].body.id;
+        }
+        let html = "<div class='av-canvas'>";
+        let sources = "";
+        let body = canvas.items[0].items[0].body;
+        if(body.type == "Choice"){
+            for(let choice of body.items){
+                sources += "<source src='" + choice.id + "' type='" + choice.format + "'>";
+            }
+        } else {
+            sources += "<source src='" + body.id + "' type='" + body.format + "'>";
+        }
+        if(canvas.width){
+            html += "<video poster='" + poster + "'>" + sources + "</video>";
+        } else {
+            html += "<audio poster='" + poster + "'>" + sources + "</audio>";
+        }
+        html += "</div>";
+        $('#thumbs').append(html);
+    }
+}
 
 
 

@@ -73,9 +73,9 @@ function makeAVCanvases(manifest){
             sources += "<source src='" + body.id + "' type='" + body.format + "'>";
         }
         if(canvas.width){
-            html += "<video poster='" + poster + "'>" + sources + "</video>";
+            html += "<video controls poster='" + poster + "'>" + sources + "</video>";
         } else {
-            html += "<audio poster='" + poster + "'>" + sources + "</audio>";
+            html += "<audio controls poster='" + poster + "'>" + sources + "</audio>";
         }
         html += "</div>";
         $('#thumbs').append(html);

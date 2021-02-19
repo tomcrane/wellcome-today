@@ -44,10 +44,13 @@ function load(iiifResource){
         if(canvasList[0].duration){
             // AV
             makeAVCanvases(manifest);
-        } else {
+        } else if(canvasList[0].width) {
             // images
             makeThumbSizeSelector();
             drawThumbs();
+        } else {
+            // Something else...
+            makeBDCanvases(manifest);
         }
     }
 
@@ -77,11 +80,33 @@ function makeAVCanvases(manifest){
         } else {
             html += "<audio controls poster='" + poster + "'>" + sources + "</audio>";
         }
+        if(canvas.annotations){
+            for(anno of canvas.annotations[0].items){
+                // assume only one page for now, and that we just link to the resource
+                html += "<div class='av-anno'><a href='" + anno.body.id + "' target='_blank'>" + langMap(anno.body.label) + "</a></div>";
+            }
+        }
         html += "</div>";
+
         $('#thumbs').append(html);
     }
 }
 
+function makeBDCanvases(manifest){
+    for(canvas of canvasList){
+        let thumbnail = manifest.thumbnail[0].id;
+        let html = "<div class='bd-canvas'>";
+        if(canvas.annotations){
+            for(anno of canvas.annotations[0].items){
+                // assume only one page for now, and that we just link to the resource
+                html += "<iframe src='" + anno.body.id + "'></iframe>";
+            }
+        }
+        html += "</div>";
+
+        $('#thumbs').append(html);
+    }
+}
 
 
 function getThumbnailSizes(canvas){

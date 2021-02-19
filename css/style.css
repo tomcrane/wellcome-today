@@ -142,3 +142,21 @@ footer {
     float:left;
     cursor:auto!important;
 }
+
+.av-anno {
+    margin-top:1em;
+    clear: both;
+    font-weight: bold;
+    font-size: larger;
+}
+
+.bd-canvas {
+    margin-top:1em;
+    width: 95vw;
+    height:75vh;
+}
+
+iframe {
+    width: 100%;
+    height: 100%;
+}

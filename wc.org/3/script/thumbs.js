@@ -22,7 +22,7 @@ function load(iiifResource){
             let wcManifestationId = manifest.id.split("/")[4];
             if(wcManifestationId){
                 let manifestLink = "<a href='" + manifest.id + "'>manifest</a>";
-                let uvLink = "<a href='http://universalviewer.io/examples/?manifest=" + manifest.id + "'>UV</a>";
+                let uvLink = "<a href='http://universalviewer.io/examples/#?manifest=" + manifest.id + "'>UV</a>";
                 let itemPageLink = "<a href='" + manifest.homepage[0].id + "'>work page</a>";
                 $('#annoDump').after(" | " + manifestLink + " | " + uvLink + " | " + itemPageLink);
                 if(getSearchService(manifest))

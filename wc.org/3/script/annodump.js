@@ -45,7 +45,7 @@ function getTextLines(canvas, annoPage) {
     var html = "<div class='annoInfo textLines'>";
     annoPage.items.forEach(function(anno){
         if(anno.motivation == "supplementing" && anno.body.type == "TextualBody"){
-            html += "<div><a target='_blank' href='" + getImageLink(canvas, anno.target.id) + "'>" + anno.body.value + "</a></div>";
+            html += "<div><a target='_blank' href='" + getImageLink(canvas, anno.target) + "'>" + anno.body.value + "</a></div>";
         }
     });
     html += "</div>";
@@ -56,7 +56,7 @@ function getIllustrations(canvas, annoPage) {
     var html = "<div class='annoInfo illustrations'>";
     annoPage.items.forEach(function(anno){
         if(anno.motivation == "classifying" && anno.body.id.includes("Image")){
-            html += "<div><p>" + langMap(anno.body.label) + "</p><a target='_blank' href='" + getImageLink(canvas, anno.target.id) + "'><img src='" + getImageLink(canvas, anno.target.id, 0.15) + "' /></a></div>";
+            html += "<div><p>" + langMap(anno.body.label) + "</p><a target='_blank' href='" + getImageLink(canvas, anno.target) + "'><img src='" + getImageLink(canvas, anno.target, 0.15) + "' /></a></div>";
         }
     });
     html += "</div>";

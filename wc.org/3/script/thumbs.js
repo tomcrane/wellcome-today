@@ -129,7 +129,7 @@ function readAnnoLines(canvas, annoList, readBehaviour){
                 let line = {
                     text: anno.body.value,
                     lineToSpeak: new SpeechSynthesisUtterance(anno.body.value),
-                    region: /#xywh=(.*)/g.exec(anno.target.id)[1]
+                    region: /#xywh=(.*)/g.exec(anno.target)[1]
                 };                     
                 linesToSpeak.push(line);
                 line.lineToSpeak.onstart = function(){

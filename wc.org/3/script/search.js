@@ -4,7 +4,8 @@ function load(manifest){
     $('#iiifManifestUri').attr("href", manifest.id);
     $('#thumbViewerUri').attr("href", "thumbs.html?manifest=" + manifest.id);
     $('#annoPageUri').attr("href", "annodump.html?manifest=" + manifest.id);
-    if(manifest.id.indexOf("wellcome")!= -1){
+
+    if(isWellcomeManifest(manifest)){
         $('#itemPageUri').attr("href", manifest.homepage[0].id);
     }
     doSearch();

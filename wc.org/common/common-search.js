@@ -25,7 +25,8 @@ function load(manifest){
     $('#iiifManifestUri').attr("href", manifestId);
     $('#thumbViewerUri').attr("href", "thumbs.html?manifest=" + manifestId);
     $('#annoPageUri').attr("href", "annodump.html?manifest=" + manifestId);
-    if(manifestId.indexOf("wellcome")!= -1){
+
+    if(isWellcomeManifest(manifest)){
         if(manifest.homepage){
             $('#itemPageUri').attr("href", manifest.homepage[0].id);
         } else if(manifest.related) {

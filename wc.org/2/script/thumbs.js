@@ -7,18 +7,15 @@ function load(manifest){
     thumbs.empty();
     $('#title').text(manifest.label);
     $('#annoDump').attr("href", "annodump.html?manifest=" + manifest["@id"]);
-    if(manifest["@id"].indexOf("wellcomelibrary.org")!= -1){
-        let bnum = manifest["@id"].split("/")[4];
-        if(bnum){
-            let manifestLink = "<a href='" + manifest["@id"] + "'>manifest</a>";
-            let uvLink = "<a href='http://universalviewer.io/examples/?manifest=" + manifest["@id"] + "'>UV</a>";
-            let itemPageLink = "<a href='" + manifest.related["@id"] + "'>item page</a>";
-            $('#annoDump').after(" | " + manifestLink + " | " + uvLink + " | " + itemPageLink);
-            if(getSearchService(manifest))
-            {
-                let searchLink = "<a href='search.html?manifest=" + manifest["@id"] + "'>search</a>";;
-                $('#annoDump').after(" | " + searchLink);
-            }
+    if(isWellcomeManifest(manifest)){
+        let manifestLink = "<a href='" + manifest["@id"] + "'>manifest</a>";
+        let uvLink = "<a href='http://universalviewer.io/examples/?manifest=" + manifest["@id"] + "'>UV</a>";
+        let itemPageLink = "<a href='" + manifest.related["@id"] + "'>item page</a>";
+        $('#annoDump').after(" | " + manifestLink + " | " + uvLink + " | " + itemPageLink);
+        if(getSearchService(manifest))
+        {
+            let searchLink = "<a href='search.html?manifest=" + manifest["@id"] + "'>search</a>";;
+            $('#annoDump').after(" | " + searchLink);
         }
     }
     if(manifest.mediaSequences){

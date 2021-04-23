@@ -11,6 +11,14 @@ function onLoadQueryStringResource(iiifResource){
     }
 }
 
+function isWellcomeManifest(manifest){
+    let id = manifest["id"] || manifest["@id"];
+    if(id.indexOf("wellcome") != -1 || id.indexOf("localhost") != -1){
+        return true;
+    }
+    return false;
+}
+
 $(function() {
     $('#imfeelinglucky').on('click', ImFeelingLucky);
     $('#schBox').typeahead({

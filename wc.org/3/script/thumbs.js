@@ -18,24 +18,21 @@ function load(iiifResource){
     } else {
         let manifest = iiifResource;
         $('#annoDump').attr("href", "annodump.html?manifest=" + manifest.id);
-        if(manifest.id.indexOf("wellcome") != -1 || manifest.id.indexOf("localhost") != -1){
-            let wcManifestationId = manifest.id.split("/")[4];
-            if(wcManifestationId){
-                let manifestLink = "<a href='" + manifest.id + "'>manifest</a>";
-                let uvLink = "<a href='http://universalviewer.io/examples/#?manifest=" + manifest.id + "'>UV</a>";
-                let itemPageLink = "<a href='" + manifest.homepage[0].id + "'>work page</a>";
-                $('#annoDump').after(" | " + manifestLink + " | " + uvLink + " | " + itemPageLink);
-                if(getSearchService(manifest))
-                {
-                    let searchLink = "<a href='search.html?manifest=" + manifest.id + "'>search</a>";
-                    $('#annoDump').after(" | " + searchLink);
-                }
-                if(manifest.partOf){
-                    for(let resource of manifest.partOf){
-                        if(resource.type == "Collection" && resource.behavior && resource.behavior[0] == "multi-part"){
-                            let collLink = "<a href='thumbs.html?manifest=" + resource.id + "'><b>&#8679; up to collection</b></a>";
-                            $('#annoDump').after(" | " + collLink);
-                        }
+        if(isWellcomeManifest(manifest)){
+            let manifestLink = "<a href='" + manifest.id + "'>manifest</a>";
+            let uvLink = "<a href='http://universalviewer.io/examples/#?manifest=" + manifest.id + "'>UV</a>";
+            let itemPageLink = "<a href='" + manifest.homepage[0].id + "'>work page</a>";
+            $('#annoDump').after(" | " + manifestLink + " | " + uvLink + " | " + itemPageLink);
+            if(getSearchService(manifest))
+            {
+                let searchLink = "<a href='search.html?manifest=" + manifest.id + "'>search</a>";
+                $('#annoDump').after(" | " + searchLink);
+            }
+            if(manifest.partOf){
+                for(let resource of manifest.partOf){
+                    if(resource.type == "Collection" && resource.behavior && resource.behavior[0] == "multi-part"){
+                        let collLink = "<a href='thumbs.html?manifest=" + resource.id + "'><b>&#8679; up to collection</b></a>";
+                        $('#annoDump').after(" | " + collLink);
                     }
                 }
             }

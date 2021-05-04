@@ -7,10 +7,10 @@ var dlcsIoThumbsNoCheck = "dlcs.io/thumbsnochk/";
 
 
 var gfmTimeout;
-var urlRoot = "https://wellcomelibrary.org";
+var urlRoot = "https://iiif.wellcomecollection.org";
 
 function loadSuggestion(suggestion){
-    window.location.href = window.location.pathname + "?manifest=" + urlRoot + "/iiif/" + suggestion.id + "/manifest";
+    window.location.href = window.location.pathname + "?manifest=" + urlRoot + "/presentation/v2/" + suggestion.id;
 }
 
 function getFlatManifestations(query, syncResults, asyncResults) {
@@ -19,14 +19,14 @@ function getFlatManifestations(query, syncResults, asyncResults) {
     }
     gfmTimeout = setTimeout(function () {
         console.log('autocomplete - ' + query);
-        $.ajax(urlRoot + "/service/bNumberSuggestion?q=" + query).done(function (results) {
+        $.ajax(urlRoot + "/service/suggest-b-number?q=" + query).done(function (results) {
             asyncResults(results);
         });
     }, 300);
 }
 
 function ImFeelingLucky(){
-    $.ajax(urlRoot + "/service/bNumberSuggestion?q=imfeelinglucky").done(function (results) {
+    $.ajax(urlRoot + "/service/suggest-b-number?q=imfeelinglucky").done(function (results) {
         loadSuggestion(results[0]);    
     });
 }

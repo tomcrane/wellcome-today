@@ -17,7 +17,6 @@ function getFlatManifestations(query, syncResults, asyncResults) {
     }
     gfmTimeout = setTimeout(function () {
         console.log('autocomplete - ' + query);
-        // formerly bNumberSuggestion
         $.ajax(localStorage.getItem("iiifSource") + "/service/suggest-b-number?q=" + query).done(function (results) {
             asyncResults(results);
         });

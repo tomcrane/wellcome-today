@@ -4,13 +4,15 @@ function load(iiifResource){
     $('#title').text(langMap(iiifResource.label));
 
     if(iiifResource.type == "Collection"){
-        $('#annoDump').after("<b>This is a IIIF Collection</b> - it contains " + iiifResource.items.length + " manifests. | <a href='" + iiifResource.id + "'>View Collection IIIF JSON</a>");
+        $('#annoDump').after("<b>This is a IIIF Collection</b> - it contains " + iiifResource.items.length + " items. | <a href='" + iiifResource.id + "'>View Collection IIIF JSON</a>");
         $('#annoDump').hide();
-        for(manifest of iiifResource.items){
-            let manifestLink = "thumbs.html?manifest=" + manifest.id;
+        for(childItem of iiifResource.items){
+            let childLink = "thumbs.html?manifest=" + childItem.id;
             let html = "<div class='manifest-in-coll'>";
-            html += "<a href='" + manifestLink + "'><img src='" + manifest.thumbnail[0].id + "' /></a></h4>"
-            html += "<h4><a href='" + manifestLink + "'>" + langMap(manifest.label, "<br/>") + "</a></h4>"
+            if(childItem.thumbnail){
+                html += "<a href='" + childLink + "'><img src='" + childItem.thumbnail[0].id + "' /></a>"
+            }
+            html += "<h4><a href='" + childLink + "'>" + langMap(childItem.label, "<br/>") + "</a></h4>"
             html += "</div>";
             thumbs.append(html);
         }
@@ -63,6 +65,7 @@ function makeAVCanvases(manifest){
             poster = manifest.placeholderCanvas.items[0].items[0].body.id;
         }
         let html = "<div class='av-canvas'>";
+        html += "<h4>" + langMap(canvas.label) + "</h4>"
         let sources = "";
         let body = canvas.items[0].items[0].body;
         if(body.type == "Choice"){

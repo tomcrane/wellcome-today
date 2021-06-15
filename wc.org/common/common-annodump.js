@@ -44,8 +44,10 @@ function processQueryString(){
 
 
 function loadRandomCD(){
-    var manifestIndex = Math.floor(Math.random() * (6425));
-    loadSuggestion({id: "b19974760-" + manifestIndex});
+    let manifestIndex = Math.floor(Math.random() * (6450));
+    fetch("https://iiif.wellcomecollection.org/wlorgp/iiif/b19974760-" + manifestIndex + "/manifest")
+        .then( r => r.text() )
+        .then( t => loadSuggestion({id: t.split('/').slice(-1)[0].trim() }));
 }
 
 

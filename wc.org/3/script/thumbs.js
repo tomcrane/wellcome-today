@@ -16,7 +16,15 @@ function load(iiifResource){
             html += "</div>";
             thumbs.append(html);
         }
-
+        // This bit is a hack because C&D vols are missing their partOf, atm
+        // issues have partOf and are covered above
+        let pattern = "19974760_";
+        let pos = iiifResource.id.indexOf(pattern);
+        if(pos != -1){
+            let cdId = iiifResource.id.substr(0, pos + pattern.length - 1);
+            let collLink = "<a href='thumbs.html?manifest=" + cdId + "'><b>&#8679; up to collection</b></a>";
+            $('#annoDump').after(collLink + " | ");
+        }
     } else {
         let manifest = iiifResource;
         $('#annoDump').attr("href", "annodump.html?manifest=" + manifest.id);

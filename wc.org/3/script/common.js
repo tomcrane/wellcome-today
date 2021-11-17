@@ -69,11 +69,13 @@ function makeIIIFSourceSelector(){
 
 function langMap(langMap, separator){
     // we can do language selection later; for now this extracts the "en" key and concatenates the strings
-    if(!separator) separator = "\r\n";
-    var strings = langMap["en"];
-    if(!strings) strings = langMap["none"];
-    if(strings){
-        return strings.join(separator);
+    if(langMap){
+        if(!separator) separator = "\r\n";
+        var strings = langMap["en"];
+        if(!strings) strings = langMap["none"];
+        if(strings){
+            return strings.join(separator);
+        }
     }
     return null;
 }

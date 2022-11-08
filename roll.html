@@ -1,12 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roll</title>
-    <link rel="stylesheet" href="roll.css" />
+    <style>
+        body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            background-color: #000;
+            font-family: 'monospace';
+            color: lightgray;
+        }
+
+        header {
+            height: 8vh;
+            padding-top: 2vh;
+            padding-left: 2em;
+        }
+
+        footer {
+            height: 5vh;
+            padding-top: 5vh;
+            padding-left: 2em;
+        }
+
+        main {
+            height: 80vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        #tryAgain {
+            display: none;
+        }
+
+        #page {
+            height: 80vh;
+            max-width: 80vw;
+        }
+
+        #workPage {
+            text-decoration: none;
+            color: lightgray;
+        }
+
+        #workPage:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
+
 <body>
     <header><a href="" id="workPage"></a></header>
     <main>
@@ -33,12 +81,12 @@
                     .then(manifest => analyse(manifest));
             });
 
-        function analyse(manifest){
+        function analyse(manifest) {
             document.getElementById("workPage").innerText = manifest.label["en"][0];
             document.getElementById("workPage").href = manifest.homepage[0].id;
             // just check the first canvas has a thumbnail that's an image with a 1024 thumb
             var lastSize = manifest.items?.[0].thumbnail?.[0].service?.[0].sizes?.slice(-1)[0];
-            if(lastSize && (lastSize.width == 1024 || lastSize.height == 1024)){
+            if (lastSize && (lastSize.width == 1024 || lastSize.height == 1024)) {
                 let image = document.getElementById("page");
                 setImageSrc(image, manifest.items, 0);
                 loadNext(manifest.items, 0, image);
@@ -48,27 +96,28 @@
             }
         }
 
-        function loadNext(canvases, index, prev){
+        function loadNext(canvases, index, prev) {
 
-            if(canvases.length > index){
+            if (canvases.length > index) {
                 let next = new Image();
                 next.onload = () => loadNext(canvases, index + 1, next);
                 setImageSrc(next, canvases, index);
-                if(prev){                    
-                    document.getElementById("counter").innerText = `${index+1}/${canvases.length}`;
+                if (prev) {
+                    document.getElementById("counter").innerText = `${index + 1}/${canvases.length}`;
                     document.getElementById("page").src = prev.src;
                 }
             }
         }
 
-        function setImageSrc(image, canvases, index){
+        function setImageSrc(image, canvases, index) {
             let service = canvases[index].thumbnail?.[0].service?.[0];
             let slice = document.getElementById("hilo").checked ? -1 : -2;
-            if(service){
+            if (service) {
                 let size = service.sizes?.slice(slice)[0];
                 image.src = `${service["@id"]}/full/${size.width},${size.height}/0/default.jpg`;
             }
         }
     </script>
 </body>
+
 </html>

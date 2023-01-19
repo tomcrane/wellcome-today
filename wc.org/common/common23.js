@@ -6,6 +6,10 @@ function onLoadQueryStringResource(iiifResource){
         $.getJSON(iiifResource.manifests[0]['@id'], function (cManifest) {
             load(cManifest);
         });
+    } else if(iiifResource['type'] && iiifResource['type'] == "Collection"){
+        $.getJSON(iiifResource.items[0]['id'], function (cManifest) {
+            load(cManifest);
+        });
     } else {
         load(iiifResource);
     }

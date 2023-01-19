@@ -26,7 +26,7 @@ function load(manifest){
 
 function makeCanvasHtml(canvas, canvasDiv, annoPage){
     var html = "<div class='imgContainer'><a href='" + canvas.items[0].items[0].body.id + "'><img src='" + getParticularSizeThumb(canvas, 100) + "' /></a><br/>" + langMap(canvas.label) + "</div>";
-    if(annoPage){
+    if(annoPage && annoPage.items){
         html += "<div class='annoInfo'>" + annoPage.items.length + " annotations <a href='" + annoPage.id + "'>▷</a></div>";
         if(localStorage.getItem("showTextLines") == 'true') {
             html += getTextLines(canvas, annoPage);

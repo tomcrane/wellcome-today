@@ -2,17 +2,19 @@ let canvasList;
 let lastLoadedManifest;
 
 function onLoadQueryStringResource(iiifResource){
-    if(iiifResource['@type'] && iiifResource['@type'] == "sc:Collection"){
-        $.getJSON(iiifResource.manifests[0]['@id'], function (cManifest) {
-            load(cManifest);
-        });
-    } else if(iiifResource['type'] && iiifResource['type'] == "Collection"){
-        $.getJSON(iiifResource.items[0]['id'], function (cManifest) {
-            load(cManifest);
-        });
-    } else {
-        load(iiifResource);
-    }
+
+    load(iiifResource);
+    // if(iiifResource['@type'] && iiifResource['@type'] == "sc:Collection"){
+    //     $.getJSON(iiifResource.manifests[0]['@id'], function (cManifest) {
+    //         load(cManifest);
+    //     });
+    // } else if(iiifResource['type'] && iiifResource['type'] == "Collection"){
+    //     $.getJSON(iiifResource.items[0]['id'], function (cManifest) {
+    //         load(cManifest);
+    //     });
+    // } else {
+    //     load(iiifResource);
+    // }
 }
 
 function isWellcomeManifest(manifest){
